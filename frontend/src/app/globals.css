@@ -1,0 +1,516 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --panel: #ffffff;
+  --panel-elevated: #ffffff;
+  --panel-muted: #f1f5f9;
+  --panel-contrast: rgba(255, 255, 255, 0.84);
+  --border: #dbe3ee;
+  --border-strong: #94a3b8;
+  --sidebar: rgba(255, 255, 255, 0.86);
+  --sidebar-border: rgba(148, 163, 184, 0.5);
+  --primary: #0f766e;
+  --primary-strong: #115e59;
+  --primary-soft: #d7f0ed;
+  --accent: #2563eb;
+  --accent-soft: rgba(37, 99, 235, 0.12);
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #b42318;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --ring: rgba(15, 118, 110, 0.18);
+  --shadow: 0 20px 60px rgba(15, 118, 110, 0.08);
+  --shadow-soft: 0 16px 35px rgba(15, 23, 42, 0.08);
+  --glow-primary: 0 0 20px rgba(37, 99, 235, 0.22);
+  --glow-accent: 0 0 20px rgba(20, 184, 166, 0.2);
+  --gradient-primary: linear-gradient(135deg, #0f766e, #14b8a6);
+  --gradient-secondary: linear-gradient(135deg, #2563eb, #06b6d4);
+  --gradient-success: linear-gradient(135deg, #22c55e, #14b8a6);
+  --gradient-warning: linear-gradient(135deg, #f97316, #facc15);
+  --gradient-danger: linear-gradient(135deg, #ef4444, #f97316);
+  --gradient-purple: linear-gradient(135deg, #8b5cf6, #ec4899);
+  --brand-panel: linear-gradient(135deg, #0f766e 0%, #14b8a6 58%, #38bdf8 100%);
+  --brand-panel-text: #f8fafc;
+  --brand-panel-muted: rgba(240, 253, 250, 0.86);
+  --brand-panel-shadow: 0 18px 40px rgba(15, 118, 110, 0.22);
+  --surface-pattern:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 28%),
+    linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  --chart-patients: #3b82f6;
+  --chart-revenue: #22c55e;
+  --chart-emergency: #ef4444;
+  --chart-pending: #f59e0b;
+  --chart-analytics: #8b5cf6;
+  --chart-activity: #06b6d4;
+}
+
+[data-theme="dark-medical"] {
+  --background: #020617;
+  --foreground: #f8fafc;
+  --panel: #0f172a;
+  --panel-elevated: rgba(15, 23, 42, 0.94);
+  --panel-muted: #111827;
+  --panel-contrast: rgba(15, 23, 42, 0.48);
+  --border: rgba(71, 85, 105, 0.82);
+  --border-strong: rgba(96, 165, 250, 0.65);
+  --sidebar: #000000;
+  --sidebar-border: rgba(37, 99, 235, 0.18);
+  --primary: #14b8a6;
+  --primary-strong: #2dd4bf;
+  --primary-soft: rgba(20, 184, 166, 0.12);
+  --accent: #2563eb;
+  --accent-soft: rgba(37, 99, 235, 0.16);
+  --success: #22c55e;
+  --warning: #facc15;
+  --danger: #ef4444;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --ring: rgba(37, 99, 235, 0.26);
+  --shadow: 0 20px 60px rgba(15, 118, 110, 0.08);
+  --shadow-soft: 0 18px 45px rgba(2, 6, 23, 0.48);
+  --glow-primary: 0 0 20px rgba(37, 99, 235, 0.35);
+  --glow-accent: 0 0 20px rgba(20, 184, 166, 0.35);
+  --gradient-primary: linear-gradient(135deg, #14b8a6, #06b6d4);
+  --gradient-secondary: linear-gradient(135deg, #2563eb, #06b6d4);
+  --gradient-success: linear-gradient(135deg, #22c55e, #14b8a6);
+  --gradient-warning: linear-gradient(135deg, #f97316, #facc15);
+  --gradient-danger: linear-gradient(135deg, #ef4444, #f97316);
+  --gradient-purple: linear-gradient(135deg, #8b5cf6, #ec4899);
+  --brand-panel: linear-gradient(135deg, #0f172a 0%, #1d4ed8 46%, #06b6d4 100%);
+  --brand-panel-text: #f8fafc;
+  --brand-panel-muted: rgba(191, 219, 254, 0.92);
+  --brand-panel-shadow: 0 0 20px rgba(37, 99, 235, 0.24);
+  --surface-pattern:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.2), transparent 24%),
+    radial-gradient(circle at top right, rgba(20, 184, 166, 0.12), transparent 28%),
+    linear-gradient(180deg, #000000 0%, #020617 42%, #0f172a 100%);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-plex-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--surface-pattern);
+  transition: background 220ms ease;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), sans-serif;
+  color-scheme: light;
+  transition:
+    background-color 220ms ease,
+    color 220ms ease;
+}
+
+[data-theme="dark-medical"] body,
+body[data-theme="dark-medical"] {
+  color-scheme: dark;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(15, 118, 110, 0.18);
+}
+
+.text-medical-primary {
+  color: var(--text-primary);
+}
+
+.text-medical-secondary {
+  color: var(--text-secondary);
+}
+
+.text-medical-muted {
+  color: var(--text-muted);
+}
+
+.medical-glass {
+  background: var(--panel-contrast);
+  backdrop-filter: blur(20px);
+}
+
+.medical-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent),
+    var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  color: var(--text-primary);
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    transform 220ms ease;
+}
+
+.medical-card-interactive {
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease;
+}
+
+.medical-card-interactive:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  box-shadow: var(--glow-primary), var(--shadow-soft);
+}
+
+.medical-sidebar {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent),
+    var(--sidebar);
+  border: 1px solid var(--sidebar-border);
+  box-shadow: 0 22px 55px rgba(2, 6, 23, 0.16);
+}
+
+.medical-subtle-panel {
+  background: var(--panel-muted);
+  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+  color: var(--text-primary);
+}
+
+.medical-hero {
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.14), transparent 28%),
+    radial-gradient(circle at bottom left, rgba(20, 184, 166, 0.12), transparent 26%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent),
+    var(--panel);
+}
+
+.medical-brand-panel {
+  background: var(--brand-panel);
+  color: var(--brand-panel-text);
+  box-shadow: var(--brand-panel-shadow);
+}
+
+.medical-brand-muted {
+  color: var(--brand-panel-muted);
+}
+
+.medical-empty-state {
+  border: 1px dashed var(--border);
+  background: color-mix(in srgb, var(--panel-muted) 84%, transparent);
+  color: var(--text-secondary);
+}
+
+.medical-input {
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  color: var(--text-primary);
+  padding: 0.8rem 0.95rem;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.medical-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--ring);
+}
+
+.medical-input::placeholder {
+  color: var(--text-muted);
+}
+
+select.medical-input,
+textarea.medical-input,
+input.medical-input {
+  color: var(--text-primary);
+}
+
+[data-theme="dark-medical"] select.medical-input,
+[data-theme="dark-medical"] textarea.medical-input,
+[data-theme="dark-medical"] input.medical-input {
+  background: color-mix(in srgb, var(--panel) 96%, transparent);
+}
+
+[data-theme="dark-medical"] select,
+[data-theme="dark-medical"] option {
+  background-color: #0f172a;
+  color: #f8fafc;
+}
+
+.medical-label {
+  display: block;
+  margin-bottom: 0.45rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.medical-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  padding: 0.8rem 1.15rem;
+  font-weight: 600;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.1);
+  transition:
+    transform 120ms ease,
+    background 120ms ease,
+    opacity 120ms ease,
+    box-shadow 180ms ease;
+}
+
+.medical-button:hover {
+  transform: translateY(-1px);
+}
+
+.medical-button:disabled {
+  opacity: 0.7;
+  transform: none;
+}
+
+.medical-button-primary {
+  background: var(--gradient-primary);
+  color: white;
+  box-shadow: var(--glow-accent);
+}
+
+.medical-button-secondary {
+  background: var(--gradient-secondary);
+  color: white;
+  border: 1px solid var(--border);
+  box-shadow: var(--glow-primary);
+}
+
+.medical-button-danger {
+  background: var(--gradient-danger);
+  color: white;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.25);
+}
+
+.medical-button-ghost {
+  background: color-mix(in srgb, var(--panel-muted) 78%, transparent);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+.medical-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  background: color-mix(in srgb, var(--primary-soft) 80%, transparent);
+  color: var(--primary-strong);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.medical-theme-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.medical-theme-switcher > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  border-radius: 1.2rem;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--panel) 96%, transparent);
+  padding: 0.6rem 0.9rem;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.medical-theme-switcher > button:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+}
+
+.medical-theme-switcher > button.is-active {
+  border-color: var(--border-strong);
+  box-shadow: var(--glow-primary);
+}
+
+.medical-table-wrap {
+  overflow: auto;
+  border-radius: 1.5rem;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--panel) 90%, transparent);
+}
+
+.medical-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+}
+
+.medical-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: color-mix(in srgb, var(--panel-muted) 92%, transparent);
+  color: var(--text-muted);
+  padding: 0.95rem 1.25rem;
+  text-align: left;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.medical-table tbody tr {
+  border-top: 1px solid var(--border);
+  transition: background-color 150ms ease;
+}
+
+.medical-table tbody tr:hover {
+  background: color-mix(in srgb, var(--panel-muted) 70%, transparent);
+}
+
+.medical-table td {
+  padding: 1rem 1.25rem;
+  color: var(--text-secondary);
+  vertical-align: top;
+}
+
+.medical-analytics-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent),
+    color-mix(in srgb, var(--panel) 92%, transparent);
+}
+
+.medical-grid-pattern {
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--border) 62%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--border) 62%, transparent) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+[data-theme="dark-medical"] .text-slate-900,
+[data-theme="dark-medical"] .text-slate-950,
+[data-theme="dark-medical"] .text-slate-800,
+[data-theme="dark-medical"] .text-slate-700,
+[data-theme="dark-medical"] .text-slate-600,
+[data-theme="dark-medical"] .text-slate-500,
+[data-theme="dark-medical"] .text-slate-400 {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="dark-medical"] .text-slate-900,
+[data-theme="dark-medical"] .text-slate-950,
+[data-theme="dark-medical"] .text-slate-800,
+[data-theme="dark-medical"] .font-semibold.text-slate-900,
+[data-theme="dark-medical"] .font-semibold.text-slate-950,
+[data-theme="dark-medical"] .font-semibold.text-slate-800,
+[data-theme="dark-medical"] .font-medium.text-slate-900,
+[data-theme="dark-medical"] .font-medium.text-slate-950,
+[data-theme="dark-medical"] .font-medium.text-slate-800,
+[data-theme="dark-medical"] .text-lg.text-slate-900,
+[data-theme="dark-medical"] .text-lg.text-slate-950,
+[data-theme="dark-medical"] .text-lg.text-slate-800,
+[data-theme="dark-medical"] .text-xl.text-slate-900,
+[data-theme="dark-medical"] .text-xl.text-slate-950,
+[data-theme="dark-medical"] .text-xl.text-slate-800,
+[data-theme="dark-medical"] .text-2xl.text-slate-900,
+[data-theme="dark-medical"] .text-2xl.text-slate-950,
+[data-theme="dark-medical"] .text-2xl.text-slate-800,
+[data-theme="dark-medical"] .text-3xl.text-slate-900 {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark-medical"] .bg-white {
+  background-color: var(--panel) !important;
+}
+
+[data-theme="dark-medical"] .bg-slate-50,
+[data-theme="dark-medical"] .bg-slate-100,
+[data-theme="dark-medical"] .hover\:bg-slate-50:hover {
+  background-color: #334155 !important;
+}
+
+[data-theme="dark-medical"] .border-slate-100,
+[data-theme="dark-medical"] .border-slate-200,
+[data-theme="dark-medical"] .border-slate-300 {
+  border-color: var(--border) !important;
+}
+
+[data-theme="dark-medical"] .bg-red-50 {
+  background-color: rgba(239, 68, 68, 0.12) !important;
+}
+
+[data-theme="dark-medical"] .text-red-700,
+[data-theme="dark-medical"] .text-red-800 {
+  color: #fecaca !important;
+}
+
+[data-theme="dark-medical"] .bg-teal-50 {
+  background-color: rgba(20, 184, 166, 0.12) !important;
+}
+
+[data-theme="dark-medical"] .border-teal-200 {
+  border-color: rgba(20, 184, 166, 0.28) !important;
+}
+
+[data-theme="dark-medical"] .border-red-200 {
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+[data-theme="dark-medical"] .medical-card,
+[data-theme="dark-medical"] .medical-subtle-panel,
+[data-theme="dark-medical"] .medical-analytics-card,
+[data-theme="dark-medical"] .medical-empty-state,
+[data-theme="dark-medical"] .medical-table-wrap {
+  color: var(--text-primary);
+}
+
+[data-theme="dark-medical"] .shadow-lg,
+[data-theme="dark-medical"] .shadow-xl {
+  box-shadow: 0 18px 45px rgba(2, 6, 23, 0.58) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
