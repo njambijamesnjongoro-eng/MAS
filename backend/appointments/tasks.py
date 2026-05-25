@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date, timedelta
 
 from celery import shared_task
+from django.conf import settings
 from django.utils import timezone
 
 from .models import ReminderLog
@@ -19,7 +20,11 @@ def schedule_next_day_appointment_reminders_task(target_date_iso: str | None = N
 def process_appointment_reminder_log_task(reminder_log_id: int):
     reminder_log = ReminderLog.objects.select_related("appointment", "patient", "appointment__doctor").get(pk=reminder_log_id)
     processed = process_reminder_log_delivery(reminder_log)
-    if processed.status == ReminderLog.Status.RETRYING and processed.next_retry_at:
+    if (
+        processed.status == ReminderLog.Status.RETRYING
+        and processed.next_retry_at
+        and not getattr(settings, "APPOINTMENT_REMINDER_INLINE_MODE", False)
+    ):
         process_appointment_reminder_log_task.apply_async(kwargs={"reminder_log_id": processed.id}, eta=processed.next_retry_at)
     return processed.status
 
@@ -34,3 +39,9 @@ def retry_due_appointment_reminders_task():
     for reminder_log in due_logs:
         process_appointment_reminder_log_task.delay(reminder_log.id)
     return len(due_logs)
+
+
+def dispatch_reminder_log_task(reminder_log_id: int):
+    if getattr(settings, "APPOINTMENT_REMINDER_INLINE_MODE", False):
+        return process_appointment_reminder_log_task(reminder_log_id)
+    return process_appointment_reminder_log_task.delay(reminder_log_id)

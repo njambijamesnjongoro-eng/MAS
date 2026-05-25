@@ -375,6 +375,37 @@ def queue_next_day_reminders(*, target_date: date | None = None, triggered_by=No
     return queued_count
 
 
+def process_pending_reminders_for_date(*, target_date: date, limit: int = 500) -> int:
+    pending_logs = list(
+        ReminderLog.objects.select_related("appointment", "patient", "appointment__doctor")
+        .filter(
+            reminder_date=target_date,
+            status=ReminderLog.Status.PENDING,
+        )
+        .order_by("scheduled_for", "created_at")[:limit]
+    )
+    for reminder_log in pending_logs:
+        process_reminder_log_delivery(reminder_log)
+    cache.delete("appointment_reminder_dashboard_summary")
+    return len(pending_logs)
+
+
+def process_due_retry_reminders(*, limit: int = 500) -> int:
+    due_logs = list(
+        ReminderLog.objects.select_related("appointment", "patient", "appointment__doctor")
+        .filter(
+            status=ReminderLog.Status.RETRYING,
+            next_retry_at__isnull=False,
+            next_retry_at__lte=timezone.now(),
+        )
+        .order_by("next_retry_at", "created_at")[:limit]
+    )
+    for reminder_log in due_logs:
+        process_reminder_log_delivery(reminder_log)
+    cache.delete("appointment_reminder_dashboard_summary")
+    return len(due_logs)
+
+
 def build_appointment_reminder_dashboard_summary():
     cache_key = "appointment_reminder_dashboard_summary"
     cached = cache.get(cache_key)

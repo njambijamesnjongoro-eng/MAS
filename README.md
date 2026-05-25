@@ -8,7 +8,7 @@ Secure hospital Electronic Health Record platform for a single hospital, now ext
 - Backend: Django 6 + Django REST Framework
 - Database: PostgreSQL
 - Cache: Redis
-- Background tasks: Celery
+- Background tasks: Celery, with Vercel cron fallback for free-tier reminder scheduling
 - Auth: JWT with refresh rotation and backend-enforced RBAC
 - Deployment: Docker Compose + Nginx + Render blueprint
 
@@ -50,6 +50,7 @@ Secure hospital Electronic Health Record platform for a single hospital, now ext
 - Patient communication preferences for SMS and email reminders
 - Reminder logs with delivery status, retry state, and provider metadata
 - Celery-powered daily reminder scheduling and failed-delivery retries
+- Free-tier fallback with Vercel cron plus inline backend reminder processing
 - Africa's Talking SMS service integration layer
 - SMTP or SendGrid email reminder integration layer
 - Admin reminder dashboard and reminder history workspace
@@ -210,6 +211,7 @@ Patients are restricted to their own history and cannot modify clinical or opera
 - `POST /api/appointments/dashboard/summary/`
 - `GET /api/appointments/reminder-logs/`
 - `POST /api/appointments/reminder-logs/{id}/retry/`
+- `POST /api/appointments/cron/run/`
 
 ## Setup
 
@@ -277,7 +279,15 @@ Service entry points:
 - Keep `SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`, and `SECURE_SSL_REDIRECT` enabled in production.
 - Run both Celery worker and Celery beat in production so appointment reminders and retry jobs execute automatically.
 - Configure `AFRICASTALKING_*` and email credentials before enabling live reminders.
-- `render.yaml` now defines backend, frontend, Redis-compatible key value, Celery worker, Celery beat, and PostgreSQL resources for a full Render blueprint.
+- `render.yaml` defines the full multi-service Render blueprint, and `render-free.yaml` defines a free-tier-friendly backend-only Render blueprint for Vercel + free Render deployments.
+
+### 5. Free-tier deployment notes
+
+- For a zero-cost demo deployment, use Vercel for `frontend` and a single free Render web service for `backend`.
+- In that setup, set `CELERY_TASK_ALWAYS_EAGER=True` and `APPOINTMENT_REMINDER_INLINE_MODE=True` on the backend so notification and reminder tasks run inside the web process.
+- Set `APPOINTMENT_CRON_SECRET` on both backend and frontend, and set `CRON_SECRET` on Vercel. The included [frontend/vercel.json](./frontend/vercel.json) schedules a once-daily Vercel cron that calls the backend reminder endpoint.
+- Free Render web services block outbound SMTP ports, so use `SENDGRID_API_KEY` for HTTP API email delivery instead of SMTP when deploying on free Render.
+- Free Render web services spin down after 15 minutes of inactivity, and free Render Postgres expires after 30 days. This is suitable for demos and testing, not for production hospital operations.
 
 ## Local verification performed
 
@@ -296,7 +306,7 @@ SQLite was used only as a local validation fallback. Primary runtime target rema
 - [Phase 2 API notes](./docs/phase2-api.md)
 - [Phase 3 API notes](./docs/phase3-api.md)
 - [Appointment reminder API notes](./docs/appointment-reminders-api.md)
-- Deployment assets: [docker-compose.yml](./docker-compose.yml), [nginx.conf](./nginx.conf), [render.yaml](./render.yaml)
+- Deployment assets: [docker-compose.yml](./docker-compose.yml), [nginx.conf](./nginx.conf), [render.yaml](./render.yaml), [render-free.yaml](./render-free.yaml)
 
 ## Next-phase direction
 

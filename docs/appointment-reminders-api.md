@@ -50,6 +50,7 @@ The reminder content is intentionally minimal and avoids exposing diagnosis, vis
 - `GET /api/appointments/reminder-logs/`
 - `POST /api/appointments/reminder-logs/{id}/retry/`
 - `GET /api/appointments/reference-data/`
+- `POST /api/appointments/cron/run/`
 
 ## Permission model
 
@@ -70,12 +71,14 @@ The reminder content is intentionally minimal and avoids exposing diagnosis, vis
 
 ### Email
 
-- Provider: SMTP or SendGrid SMTP-compatible delivery
+- Provider: SMTP or SendGrid HTTP API
 - Required settings:
-  - `EMAIL_HOST`
-  - `EMAIL_PORT`
-  - `EMAIL_HOST_USER`
-  - `EMAIL_HOST_PASSWORD`
+  - `SENDGRID_API_KEY` for free-tier Render deployments
+  - or SMTP settings:
+    - `EMAIL_HOST`
+    - `EMAIL_PORT`
+    - `EMAIL_HOST_USER`
+    - `EMAIL_HOST_PASSWORD`
   - `DEFAULT_FROM_EMAIL`
 
 ## Deployment checklist
@@ -85,3 +88,5 @@ The reminder content is intentionally minimal and avoids exposing diagnosis, vis
 - Set a real `DJANGO_SECRET_KEY`.
 - Keep secure cookies and SSL redirect enabled in production.
 - Provide valid Africa's Talking and email credentials before enabling reminder operations for real patients.
+- For free-tier deployments without workers, set `CELERY_TASK_ALWAYS_EAGER=True` and `APPOINTMENT_REMINDER_INLINE_MODE=True`.
+- For Vercel cron fallback, set `CRON_SECRET` on the frontend and `APPOINTMENT_CRON_SECRET` on both frontend and backend.

@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import secrets
+from datetime import date, timedelta
+
+from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
@@ -25,8 +29,14 @@ from accounts.models import User
 from .filters import AppointmentFilter, ReminderLogFilter
 from .models import Appointment, ReminderLog
 from .serializers import AppointmentSerializer, PatientCommunicationPreferenceSerializer, ReminderLogSerializer
-from .services import build_appointment_reminder_dashboard_summary, create_reminder_logs_for_appointment, get_patient_communication_preference
-from .tasks import process_appointment_reminder_log_task, schedule_next_day_appointment_reminders_task
+from .services import (
+    build_appointment_reminder_dashboard_summary,
+    create_reminder_logs_for_appointment,
+    get_patient_communication_preference,
+    process_due_retry_reminders,
+    process_pending_reminders_for_date,
+)
+from .tasks import dispatch_reminder_log_task, schedule_next_day_appointment_reminders_task
 
 
 class AppointmentViewSet(viewsets.ModelViewSet):
@@ -87,7 +97,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         reminder_logs = create_reminder_logs_for_appointment(appointment, appointment.appointment_date, triggered_by=request.user)
         for reminder_log in reminder_logs:
             if reminder_log.status == ReminderLog.Status.PENDING:
-                process_appointment_reminder_log_task.delay(reminder_log.id)
+                dispatch_reminder_log_task(reminder_log.id)
         log_audit_event(
             request=request,
             actor=request.user,
@@ -184,7 +194,7 @@ class ReminderLogViewSet(viewsets.ReadOnlyModelViewSet):
         reminder_log.triggered_by = request.user
         reminder_log.error_message = ""
         reminder_log.save(update_fields=["status", "next_retry_at", "triggered_by", "error_message", "updated_at"])
-        process_appointment_reminder_log_task.delay(reminder_log.id)
+        dispatch_reminder_log_task(reminder_log.id)
         log_audit_event(
             request=request,
             actor=request.user,
@@ -222,7 +232,8 @@ class AppointmentReminderDashboardAPIView(APIView):
 
     def post(self, request):
         task_target_date = request.data.get("target_date")
-        task_id = schedule_next_day_appointment_reminders_task.delay(task_target_date).id
+        task_result = schedule_next_day_appointment_reminders_task.delay(task_target_date)
+        task_id = getattr(task_result, "id", "inline-reminder-cycle")
         log_audit_event(
             request=request,
             actor=request.user,
@@ -233,6 +244,36 @@ class AppointmentReminderDashboardAPIView(APIView):
             details={"target_date": task_target_date or "tomorrow"},
         )
         return Response({"task_id": task_id}, status=status.HTTP_202_ACCEPTED)
+
+
+class AppointmentReminderCronAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        provided = request.headers.get("Authorization", "")
+        expected_secret = getattr(settings, "APPOINTMENT_CRON_SECRET", "")
+        expected = f"Bearer {expected_secret}" if expected_secret else ""
+        if not expected_secret or not secrets.compare_digest(provided, expected):
+            return Response({"detail": "Unauthorized."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        target_date_iso = request.data.get("target_date")
+        target_date = timezone.localdate() + timedelta(days=1)
+        if target_date_iso:
+            target_date = date.fromisoformat(target_date_iso)
+
+        queued_count = schedule_next_day_appointment_reminders_task(target_date.isoformat())
+        processed_pending_count = process_pending_reminders_for_date(target_date=target_date)
+        retried_count = process_due_retry_reminders()
+        return Response(
+            {
+                "target_date": target_date.isoformat(),
+                "queued_count": queued_count,
+                "processed_pending_count": processed_pending_count,
+                "retried_count": retried_count,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class AppointmentReferenceDataAPIView(APIView):
