@@ -285,6 +285,7 @@ Service entry points:
 
 - For a zero-cost demo deployment, use Vercel for `frontend` and a single free Render web service for `backend`.
 - In that setup, set `CELERY_TASK_ALWAYS_EAGER=True` and `APPOINTMENT_REMINDER_INLINE_MODE=True` on the backend so notification and reminder tasks run inside the web process.
+- The included `render-free.yaml` starts the backend with `python manage.py seed_free_demo` before Gunicorn so first-time demo logins and sample records are available automatically on free Render.
 - Set `APPOINTMENT_CRON_SECRET` on both backend and frontend, and set `CRON_SECRET` on Vercel. The included [frontend/vercel.json](./frontend/vercel.json) schedules a once-daily Vercel cron that calls the backend reminder endpoint.
 - Free Render web services block outbound SMTP ports, so use `SENDGRID_API_KEY` for HTTP API email delivery instead of SMTP when deploying on free Render.
 - Free Render web services spin down after 15 minutes of inactivity, and free Render Postgres expires after 30 days. This is suitable for demos and testing, not for production hospital operations.
