@@ -1,7 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+import { setCachedAuthUser } from "@/lib/auth-user-cache";
+import type { AuthUser } from "@/types";
+
+type LoginResponse = {
+  message: string;
+  access: string;
+  refresh: string;
+  user?: AuthUser;
+};
 
 export function LoginForm() {
   const router = useRouter();
@@ -9,6 +19,10 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    router.prefetch("/dashboard");
+  }, [router]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -24,7 +38,7 @@ export function LoginForm() {
         body: JSON.stringify({ username, password }),
       });
 
-      const payload = await response.json().catch(() => ({}));
+      const payload = (await response.json().catch(() => ({}))) as Partial<LoginResponse>;
       if (!response.ok) {
         const message =
           typeof payload === "object" && payload !== null && "non_field_errors" in payload
@@ -33,6 +47,10 @@ export function LoginForm() {
               ? String((payload as { detail: string }).detail)
               : "Login failed.";
         throw new Error(message);
+      }
+
+      if (payload.user) {
+        setCachedAuthUser(payload.user);
       }
 
       router.replace("/dashboard");

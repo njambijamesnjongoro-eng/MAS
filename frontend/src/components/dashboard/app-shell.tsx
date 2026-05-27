@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { clearCachedAuthUser, getCachedAuthUser, setCachedAuthUser } from "@/lib/auth-user-cache";
 import { apiRequest } from "@/lib/client-api";
 import { formatRoleLabel } from "@/lib/format";
 import type { AuthUser, RoleCode } from "@/types";
@@ -104,7 +105,7 @@ type AppShellProps = {
 export function AppShell({ title, description, children }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(() => getCachedAuthUser());
   const [error, setError] = useState<string | null>(null);
   const [navOpen, setNavOpen] = useState(false);
   const [isLoggingOut, startLogoutTransition] = useTransition();
@@ -115,10 +116,13 @@ export function AppShell({ title, description, children }: AppShellProps) {
       try {
         const { data } = await apiRequest<AuthUser>("/api/auth/me");
         if (!cancelled) {
+          setCachedAuthUser(data);
           setUser(data);
+          setError(null);
         }
       } catch {
         if (!cancelled) {
+          clearCachedAuthUser();
           setError("Your session could not be confirmed.");
           router.replace("/login");
         }
@@ -139,13 +143,14 @@ export function AppShell({ title, description, children }: AppShellProps) {
   function handleLogout() {
     startLogoutTransition(async () => {
       await fetch("/api/auth/logout", { method: "POST" });
+      clearCachedAuthUser();
       router.replace("/login");
     });
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="mx-auto flex min-h-screen max-w-[1680px] gap-6 px-4 py-4 lg:px-6">
+    <div className="min-h-screen overflow-x-hidden">
+      <div className="mx-auto flex min-h-screen max-w-[1680px] gap-6 overflow-x-hidden px-4 py-4 lg:px-6">
         {navOpen && (
           <button
             type="button"
@@ -211,14 +216,14 @@ export function AppShell({ title, description, children }: AppShellProps) {
           </div>
         </aside>
 
-        <main className="flex-1 space-y-6 lg:pl-[21.5rem]">
-          <section className="medical-card medical-hero rounded-[2rem] px-5 py-5 lg:px-6">
+        <main className="min-w-0 flex-1 space-y-6 overflow-x-hidden lg:pl-[21.5rem]">
+          <section className="medical-card medical-hero overflow-hidden rounded-[2rem] px-5 py-5 lg:px-6">
             <div className="flex flex-col gap-5">
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <button
                   type="button"
                   onClick={() => setNavOpen(true)}
-                  className="medical-button medical-button-ghost lg:hidden"
+                  className="medical-button medical-button-ghost w-full sm:w-auto lg:hidden"
                 >
                   <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-[1.8]">
                     <path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round" />
@@ -226,7 +231,9 @@ export function AppShell({ title, description, children }: AppShellProps) {
                   Menu
                 </button>
                 <div className="hidden lg:block" />
-                <ThemeToggle />
+                <div className="w-full sm:w-auto sm:self-start">
+                  <ThemeToggle />
+                </div>
               </div>
 
               <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
@@ -237,8 +244,8 @@ export function AppShell({ title, description, children }: AppShellProps) {
                 </div>
 
                 {user && (
-                  <div className="medical-glass rounded-[1.5rem] border border-[var(--border)] px-4 py-4 text-sm text-medical-secondary">
-                    <div className="font-semibold text-medical-primary">{user.email}</div>
+                  <div className="medical-glass min-w-0 rounded-[1.5rem] border border-[var(--border)] px-4 py-4 text-sm text-medical-secondary">
+                    <div className="break-all font-semibold text-medical-primary">{user.email}</div>
                     <div className="mt-1">Backend access is enforced for {formatRoleLabel(user.effective_role)}.</div>
                   </div>
                 )}

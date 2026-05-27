@@ -104,6 +104,7 @@
 
 html {
   background: var(--surface-pattern);
+  overflow-x: clip;
   transition: background 220ms ease;
 }
 
@@ -112,6 +113,7 @@ body {
   color: var(--foreground);
   font-family: var(--font-inter), sans-serif;
   color-scheme: light;
+  overflow-x: hidden;
   transition:
     background-color 220ms ease,
     color 220ms ease;
@@ -334,9 +336,10 @@ input.medical-input {
 }
 
 .medical-theme-switcher {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.65rem;
+  width: 100%;
 }
 
 .medical-theme-switcher > button {
@@ -346,6 +349,7 @@ input.medical-input {
   border-radius: 1.2rem;
   border: 1px solid var(--border);
   background: color-mix(in srgb, var(--panel) 96%, transparent);
+  min-width: 0;
   padding: 0.6rem 0.9rem;
   transition:
     border-color 180ms ease,
@@ -406,6 +410,7 @@ input.medical-input {
 }
 
 .medical-analytics-card {
+  min-width: 0;
   position: relative;
   overflow: hidden;
   border-radius: 1.5rem;
@@ -502,6 +507,14 @@ input.medical-input {
 [data-theme="dark-medical"] .shadow-lg,
 [data-theme="dark-medical"] .shadow-xl {
   box-shadow: 0 18px 45px rgba(2, 6, 23, 0.58) !important;
+}
+
+@media (min-width: 640px) {
+  .medical-theme-switcher {
+    display: flex;
+    flex-wrap: wrap;
+    width: auto;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

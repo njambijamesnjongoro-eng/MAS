@@ -90,7 +90,7 @@ export function AnalyticsMetricCard({ label, value, helper, accent, trendLabel }
   const accentStyles = accentMap[accent];
 
   return (
-    <article className="medical-analytics-card p-5">
+    <article className="medical-analytics-card min-w-0 p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="text-xs uppercase tracking-[0.18em] text-medical-muted">{label}</div>
@@ -102,7 +102,7 @@ export function AnalyticsMetricCard({ label, value, helper, accent, trendLabel }
           style={{ background: accentStyles.gradient, boxShadow: accentStyles.glow }}
         />
       </div>
-      <div className="mt-5 flex items-center justify-between gap-4">
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-sm text-medical-secondary">{helper}</div>
         <div className="rounded-full border border-[var(--border)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-medical-muted">
           {trendLabel}
@@ -121,7 +121,7 @@ export function AnalyticsLineChart({ title, subtitle, values, accent }: LineChar
   const areaPath = buildAreaPath(safeValues);
 
   return (
-    <article className="medical-analytics-card medical-grid-pattern p-5">
+    <article className="medical-analytics-card medical-grid-pattern min-w-0 p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h3 className="text-lg font-semibold text-medical-primary">{title}</h3>
@@ -132,7 +132,7 @@ export function AnalyticsLineChart({ title, subtitle, values, accent }: LineChar
         </div>
       </div>
 
-      <div className="mt-6 h-52">
+      <div className="mt-6 h-40 sm:h-44 lg:h-52">
         <svg viewBox="0 0 100 100" className="h-full w-full overflow-visible" preserveAspectRatio="none">
           <defs>
             <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
@@ -171,12 +171,12 @@ export function AnalyticsDonutChart({ title, subtitle, segments }: DonutChartPro
   });
 
   return (
-    <article className="medical-analytics-card p-5">
+    <article className="medical-analytics-card min-w-0 p-5">
       <h3 className="text-lg font-semibold text-medical-primary">{title}</h3>
       <p className="mt-2 text-sm text-medical-secondary">{subtitle}</p>
 
-      <div className="mt-6 grid items-center gap-6 md:grid-cols-[0.95fr_1.05fr]">
-        <div className="mx-auto h-44 w-44">
+      <div className="mt-6 grid min-w-0 items-center gap-6 md:grid-cols-[0.95fr_1.05fr]">
+        <div className="mx-auto h-36 w-36 sm:h-40 sm:w-40 lg:h-44 lg:w-44">
           <svg viewBox="0 0 120 120" className="h-full w-full">
             <circle cx="60" cy="60" r={radius} fill="none" stroke="rgba(148, 163, 184, 0.16)" strokeWidth="14" />
             {chartSegments.map((segment) => {
@@ -206,7 +206,7 @@ export function AnalyticsDonutChart({ title, subtitle, segments }: DonutChartPro
           </svg>
         </div>
 
-        <div className="space-y-3">
+        <div className="min-w-0 space-y-3">
           {segments.map((segment) => (
             <div key={segment.label} className="medical-subtle-panel rounded-[1.2rem] px-4 py-3">
               <div className="flex items-center justify-between gap-3">
@@ -228,7 +228,7 @@ export function AnalyticsBarChart({ title, subtitle, bars }: BarChartProps) {
   const max = Math.max(...bars.map((bar) => bar.value), 1);
 
   return (
-    <article className="medical-analytics-card p-5">
+    <article className="medical-analytics-card min-w-0 p-5">
       <h3 className="text-lg font-semibold text-medical-primary">{title}</h3>
       <p className="mt-2 text-sm text-medical-secondary">{subtitle}</p>
 

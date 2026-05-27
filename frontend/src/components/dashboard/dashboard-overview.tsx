@@ -9,6 +9,7 @@ import {
   AnalyticsLineChart,
   AnalyticsMetricCard,
 } from "@/components/dashboard/analytics-widgets";
+import { clearCachedAuthUser, getCachedAuthUser, setCachedAuthUser } from "@/lib/auth-user-cache";
 import { apiRequest } from "@/lib/client-api";
 import { formatCurrency, formatDate, formatDateTime, formatRoleLabel, formatStatusLabel } from "@/lib/format";
 import type {
@@ -16,7 +17,28 @@ import type {
   ClinicalDashboardSummary,
   NotificationSummary,
   OperationsDashboardSummary,
+  RoleCode,
 } from "@/types";
+
+const operationalRoles = new Set<RoleCode>(["super_admin", "hospital_admin", "receptionist"]);
+
+function isOperationalRole(role: RoleCode) {
+  return operationalRoles.has(role);
+}
+
+type DashboardPayload =
+  | {
+      mode: "operations";
+      notifications: NotificationSummary;
+      operations: OperationsDashboardSummary;
+      role: RoleCode;
+    }
+  | {
+      mode: "clinical";
+      notifications: NotificationSummary;
+      clinical: ClinicalDashboardSummary;
+      role: RoleCode;
+    };
 
 function InsightList({
   title,
@@ -41,7 +63,7 @@ function EmptyState({ message }: { message: string }) {
 }
 
 export function DashboardOverview() {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(() => getCachedAuthUser());
   const [clinical, setClinical] = useState<ClinicalDashboardSummary | null>(null);
   const [operations, setOperations] = useState<OperationsDashboardSummary | null>(null);
   const [notifications, setNotifications] = useState<NotificationSummary | null>(null);
@@ -51,35 +73,93 @@ export function DashboardOverview() {
   useEffect(() => {
     let cancelled = false;
 
-    async function loadSummary() {
+    function applyDashboardPayload(payload: DashboardPayload) {
+      if (payload.mode === "operations") {
+        setOperations(payload.operations);
+        setClinical(null);
+      } else {
+        setClinical(payload.clinical);
+        setOperations(null);
+      }
+      setNotifications(payload.notifications);
+    }
+
+    async function fetchDashboardPayload(role: RoleCode): Promise<DashboardPayload> {
+      const [primaryResponse, notificationResponse] = await Promise.all([
+        isOperationalRole(role)
+          ? apiRequest<OperationsDashboardSummary>("/api/operations/dashboard/summary")
+          : apiRequest<ClinicalDashboardSummary>("/api/clinical/dashboard/summary"),
+        apiRequest<NotificationSummary>("/api/notifications/summary"),
+      ]);
+
+      if (isOperationalRole(role)) {
+        return {
+          mode: "operations",
+          notifications: notificationResponse.data,
+          operations: primaryResponse.data as OperationsDashboardSummary,
+          role,
+        };
+      }
+
+      return {
+        mode: "clinical",
+        notifications: notificationResponse.data,
+        clinical: primaryResponse.data as ClinicalDashboardSummary,
+        role,
+      };
+    }
+
+    async function refreshAuthUser() {
       try {
         const { data: authUser } = await apiRequest<AuthUser>("/api/auth/me");
-        if (cancelled) {
-          return;
+        if (!cancelled) {
+          setCachedAuthUser(authUser);
+          setUser(authUser);
         }
-        setUser(authUser);
+        return authUser;
+      } catch {
+        if (!cancelled) {
+          clearCachedAuthUser();
+        }
+        return null;
+      }
+    }
 
-        const requests: Array<Promise<unknown>> = [apiRequest<NotificationSummary>("/api/notifications/summary")];
-        const operationalRoles = ["super_admin", "hospital_admin", "receptionist"];
+    async function loadSummary() {
+      const cachedUser = getCachedAuthUser();
+      const cachedRole = cachedUser?.effective_role;
 
-        if (operationalRoles.includes(authUser.effective_role)) {
-          requests.unshift(apiRequest<OperationsDashboardSummary>("/api/operations/dashboard/summary"));
+      if (cachedUser && !cancelled) {
+        setUser(cachedUser);
+      }
+
+      try {
+        if (cachedRole) {
+          applyDashboardPayload(await fetchDashboardPayload(cachedRole));
+          void refreshAuthUser().then(async (refreshedUser) => {
+            if (!refreshedUser || refreshedUser.effective_role === cachedRole || cancelled) {
+              return;
+            }
+
+            try {
+              const correctedPayload = await fetchDashboardPayload(refreshedUser.effective_role);
+              if (!cancelled) {
+                applyDashboardPayload(correctedPayload);
+              }
+            } catch {
+              // Keep the initial dashboard data visible if background revalidation fails.
+            }
+          });
         } else {
-          requests.unshift(apiRequest<ClinicalDashboardSummary>("/api/clinical/dashboard/summary"));
+          const authUser = await refreshAuthUser();
+          if (!authUser) {
+            throw new Error("Your session could not be confirmed.");
+          }
+          applyDashboardPayload(await fetchDashboardPayload(authUser.effective_role));
         }
-
-        const [primaryResponse, notificationResponse] = await Promise.all(requests);
-        if (cancelled) {
-          return;
+        if (!cancelled) {
+          setError(null);
         }
-
-        if (operationalRoles.includes(authUser.effective_role)) {
-          setOperations((primaryResponse as { data: OperationsDashboardSummary }).data);
-        } else {
-          setClinical((primaryResponse as { data: ClinicalDashboardSummary }).data);
-        }
-
-        setNotifications((notificationResponse as { data: NotificationSummary }).data);
       } catch (loadError) {
         if (!cancelled) {
           setError(loadError instanceof Error ? loadError.message : "Unable to load dashboard.");
@@ -244,7 +324,7 @@ export function DashboardOverview() {
         ))}
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.3fr_0.95fr_0.95fr]">
+      <section className="grid min-w-0 gap-6 xl:grid-cols-[1.3fr_0.95fr_0.95fr]">
         <AnalyticsLineChart
           title={isOperationalDashboard ? "Operational activity pulse" : "Clinical activity pulse"}
           subtitle={
@@ -273,7 +353,7 @@ export function DashboardOverview() {
         />
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.55fr_1fr]">
+      <section className="grid min-w-0 gap-6 xl:grid-cols-[1.55fr_1fr]">
         <InsightList
           title={isOperationalDashboard ? "Hospital operations snapshot" : "Clinical workflow snapshot"}
           subtitle={
@@ -372,7 +452,7 @@ export function DashboardOverview() {
         </InsightList>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.2fr_1fr]">
+      <section className="grid min-w-0 gap-6 xl:grid-cols-[1.2fr_1fr]">
         <InsightList
           title={isOperationalDashboard ? "Pending invoices" : "Recent patients"}
           subtitle={
