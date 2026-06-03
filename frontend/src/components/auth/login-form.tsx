@@ -22,6 +22,7 @@ export function LoginForm() {
 
   useEffect(() => {
     router.prefetch("/dashboard");
+    void fetch("/api/system/warmup", { cache: "no-store" }).catch(() => undefined);
   }, [router]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
