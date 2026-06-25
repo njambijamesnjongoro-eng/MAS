@@ -10,7 +10,7 @@ Secure hospital Electronic Health Record platform for a single hospital, now ext
 - Cache: Redis
 - Background tasks: Celery, with Vercel cron fallback for free-tier reminder scheduling
 - Auth: JWT with refresh rotation and backend-enforced RBAC
-- Deployment: Docker Compose + Nginx + Render blueprint
+- Deployment: Docker Compose + Nginx + free Render backend blueprint + Vercel frontend
 
 ## Current scope
 
@@ -279,13 +279,13 @@ Service entry points:
 - Keep `SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`, and `SECURE_SSL_REDIRECT` enabled in production.
 - Run both Celery worker and Celery beat in production so appointment reminders and retry jobs execute automatically.
 - Configure `AFRICASTALKING_*` and email credentials before enabling live reminders.
-- `render.yaml` defines the full multi-service Render blueprint, and `render-free.yaml` defines a free-tier-friendly backend-only Render blueprint for Vercel + free Render deployments.
+- `render.yaml` is the default free-tier Render backend blueprint for Vercel + Render deployments. It creates one Django web service and one PostgreSQL database.
 
 ### 5. Free-tier deployment notes
 
-- For a zero-cost demo deployment, use Vercel for `frontend` and a single free Render web service for `backend`.
+- For a zero-cost demo deployment, use Vercel for `frontend` and Render for the Django `backend` plus PostgreSQL.
 - In that setup, set `CELERY_TASK_ALWAYS_EAGER=True` and `APPOINTMENT_REMINDER_INLINE_MODE=True` on the backend so notification and reminder tasks run inside the web process.
-- The included `render-free.yaml` starts the backend with `python manage.py seed_free_demo` before Gunicorn so first-time demo logins and sample records are available automatically on free Render.
+- The default [render.yaml](./render.yaml) runs migrations and `seed_free_demo` during deploy, then starts Gunicorn directly. This keeps the free web service lightweight during cold starts and health checks.
 - Set `APPOINTMENT_CRON_SECRET` on both backend and frontend, and set `CRON_SECRET` on Vercel. The included [frontend/vercel.json](./frontend/vercel.json) schedules a once-daily Vercel cron that calls the backend reminder endpoint.
 - Free Render web services block outbound SMTP ports, so use `SENDGRID_API_KEY` for HTTP API email delivery instead of SMTP when deploying on free Render.
 - Free Render web services spin down after 15 minutes of inactivity, and free Render Postgres expires after 30 days. This is suitable for demos and testing, not for production hospital operations.
