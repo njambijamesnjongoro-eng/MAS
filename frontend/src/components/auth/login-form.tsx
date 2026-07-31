@@ -17,6 +17,7 @@ export function LoginForm() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -91,16 +92,27 @@ export function LoginForm() {
           <label htmlFor="password" className="medical-label">
             Password
           </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            className="medical-input"
-            placeholder="Enter your password"
-            autoComplete="current-password"
-            required
-          />
+          <div className="relative">
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              className="medical-input pr-24"
+              placeholder="Enter your password"
+              autoComplete="current-password"
+              required
+            />
+            <button
+              type="button"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
+              onClick={() => setShowPassword((current) => !current)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full px-3 py-1.5 text-xs font-semibold text-medical-secondary transition hover:bg-[var(--panel-contrast)] hover:text-medical-primary focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
         </div>
       </div>
 
