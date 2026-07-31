@@ -4,8 +4,8 @@ import { DashboardOverview } from "@/components/dashboard/dashboard-overview";
 export default function DashboardPage() {
   return (
     <AppShell
-      title="Hospital Dashboard"
-      description="Move quickly between clinical care, admissions, billing, imaging, and queue awareness with server-enforced access controls."
+      title="Today / Patient Flow"
+      description="Start here each shift. Follow patients from arrival to triage, doctor consultation, orders, billing, admission, and follow-up."
     >
       <DashboardOverview />
     </AppShell>

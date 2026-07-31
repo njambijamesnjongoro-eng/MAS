@@ -10,8 +10,8 @@ export default async function PatientProfilePage({ params }: PageProps) {
 
   return (
     <AppShell
-      title="Patient Profile"
-      description="Access the patient record quickly, review risk information, and maintain a clean medical history foundation."
+      title="Patient Chart"
+      description="Confirm the patient, review alerts and history, then continue to triage, doctor visit, orders, billing, or admission."
     >
       <PatientProfile patientId={id} />
     </AppShell>

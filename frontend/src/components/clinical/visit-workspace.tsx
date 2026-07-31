@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { apiRequest } from "@/lib/client-api";
 import { formatDateTime, formatRoleLabel, formatStatusLabel } from "@/lib/format";
 import type { AuthUser, LabRequest, PatientDetail, Prescription, VisitDetail } from "@/types";
+import { PatientJourneyGuide } from "@/components/workflow/patient-journey-guide";
 
 import { ToastNotice } from "./toast-notice";
 
@@ -213,6 +214,12 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
   const canUploadLab = useMemo(() => {
     return user ? ["lab_technician", "hospital_admin", "super_admin"].includes(user.effective_role) : false;
   }, [user]);
+  const visitJourneyStep = useMemo(() => {
+    const hasOrders =
+      form.prescriptions.some((item) => item.medication_name.trim()) ||
+      form.lab_requests.some((item) => item.test_name.trim());
+    return hasOrders ? 4 : 3;
+  }, [form.lab_requests, form.prescriptions]);
 
   function updateField<K extends keyof VisitFormState>(field: K, value: VisitFormState[K]) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -415,16 +422,16 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
           </div>
           <div className="flex flex-wrap gap-3">
             <Link href={`/patients/${patientId}`} className="medical-button medical-button-secondary">
-              Back to patient
+              Back to chart
             </Link>
             {canEditEncounter && (
               <button type="button" onClick={saveVisit} disabled={saving} className="medical-button medical-button-primary">
-                {saving ? "Saving..." : visitId ? "Save visit" : "Create visit"}
+                {saving ? "Saving..." : visitId ? "Save consultation" : "Start consultation"}
               </button>
             )}
             {visitId && canEditEncounter && form.status !== "closed" && (
               <button type="button" onClick={closeCurrentVisit} disabled={closingVisit} className="medical-button medical-button-secondary">
-                {closingVisit ? "Closing..." : "Close visit"}
+                {closingVisit ? "Finishing..." : "Finish visit"}
               </button>
             )}
           </div>
@@ -437,9 +444,14 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
         )}
       </section>
 
+      <PatientJourneyGuide activeStep={visitJourneyStep} canStartEncounter={canEditEncounter} compact patientId={patientId} />
+
       <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <article className="medical-card rounded-[2rem] p-6">
-          <h4 className="text-xl font-semibold text-slate-900">Visit details</h4>
+          <h4 className="text-xl font-semibold text-slate-900">Step 1: Ask what brought the patient in</h4>
+          <p className="mt-2 text-sm text-slate-600">
+            Capture the patient story first. This is the main consultation note doctors will return to later.
+          </p>
           <div className="mt-5 grid gap-5 md:grid-cols-2">
             <div className="md:col-span-2">
               <label className="medical-label">Visit date and time</label>
@@ -452,7 +464,7 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
               />
             </div>
             <div className="md:col-span-2">
-              <label className="medical-label">Chief complaint</label>
+              <label className="medical-label">Main problem today</label>
               <input
                 className="medical-input"
                 value={form.chief_complaint}
@@ -461,7 +473,7 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
               />
             </div>
             <div className="md:col-span-2">
-              <label className="medical-label">Symptoms</label>
+              <label className="medical-label">History and symptoms</label>
               <textarea
                 className="medical-input min-h-28"
                 value={form.symptoms}
@@ -470,7 +482,7 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
               />
             </div>
             <div className="md:col-span-2">
-              <label className="medical-label">Diagnosis summary</label>
+              <label className="medical-label">Working diagnosis summary</label>
               <textarea
                 className="medical-input min-h-24"
                 value={form.diagnosis_summary}
@@ -479,7 +491,7 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
               />
             </div>
             <div className="md:col-span-2">
-              <label className="medical-label">Treatment plan</label>
+              <label className="medical-label">Treatment and care plan</label>
               <textarea
                 className="medical-input min-h-24"
                 value={form.treatment_plan}
@@ -514,7 +526,10 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
         </article>
 
         <article className="medical-card rounded-[2rem] p-6">
-          <h4 className="text-xl font-semibold text-slate-900">Vitals</h4>
+          <h4 className="text-xl font-semibold text-slate-900">Step 2: Record vital signs</h4>
+          <p className="mt-2 text-sm text-slate-600">
+            Vitals can be entered by nurses and reviewed by doctors before diagnosis and treatment.
+          </p>
           <div className="mt-5 grid gap-5 md:grid-cols-2">
             {[
               ["temperature", "Temperature (C)"],
@@ -547,7 +562,10 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
 
       <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
         <article className="medical-card rounded-[2rem] p-6">
-          <h4 className="text-xl font-semibold text-slate-900">Diagnosis</h4>
+          <h4 className="text-xl font-semibold text-slate-900">Step 3: Diagnosis</h4>
+          <p className="mt-2 text-sm text-slate-600">
+            Record the clinical decision clearly enough that another clinician can safely continue care.
+          </p>
           <div className="mt-5 grid gap-5">
             <div>
               <label className="medical-label">Primary diagnosis</label>
@@ -606,14 +624,17 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
 
         <article className="medical-card rounded-[2rem] p-6">
           <div className="flex items-center justify-between gap-4">
-            <h4 className="text-xl font-semibold text-slate-900">Prescriptions</h4>
+            <div>
+              <h4 className="text-xl font-semibold text-slate-900">Step 4: Medicines to give</h4>
+              <p className="mt-2 text-sm text-slate-600">Add medicines, doses, frequency, route, and instructions.</p>
+            </div>
             {canEditEncounter && (
               <button
                 type="button"
                 onClick={() => setForm((current) => ({ ...current, prescriptions: [...current.prescriptions, emptyPrescription()] }))}
                 className="medical-button medical-button-secondary"
               >
-                Add medication
+                Add medicine
               </button>
             )}
           </div>
@@ -688,8 +709,10 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
       <section className="medical-card rounded-[2rem] p-6">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h4 className="text-xl font-semibold text-slate-900">Lab requests</h4>
-            <p className="mt-2 text-sm text-slate-600">Doctors can request tests; lab technicians can upload results.</p>
+            <h4 className="text-xl font-semibold text-slate-900">Step 5: Lab tests and results</h4>
+            <p className="mt-2 text-sm text-slate-600">
+              Request the tests needed for this visit. Lab staff upload results here for the doctor to review.
+            </p>
           </div>
           {canEditEncounter && (
             <button
@@ -697,7 +720,7 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
               onClick={() => setForm((current) => ({ ...current, lab_requests: [...current.lab_requests, emptyLabRequest()] }))}
               className="medical-button medical-button-secondary"
             >
-              Add lab test
+              Request lab test
             </button>
           )}
         </div>

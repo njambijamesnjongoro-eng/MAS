@@ -10,8 +10,8 @@ export default async function VisitDetailPage({ params }: PageProps) {
 
   return (
     <AppShell
-      title="Encounter Workspace"
-      description="Review and update the full visit record, including vitals, diagnosis, prescriptions, lab requests, and uploaded results."
+      title="Doctor Visit Workspace"
+      description="Review and update this visit step by step: symptoms, vitals, diagnosis, prescriptions, tests, results, and closure."
     >
       <VisitWorkspace patientId={id} visitId={visitId} />
     </AppShell>

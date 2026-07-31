@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { apiRequest } from "@/lib/client-api";
 import { formatDateTime, formatStatusLabel } from "@/lib/format";
 import type { PaginatedResponse, TimelineEntry, VisitSummary } from "@/types";
+import { PatientJourneyGuide } from "@/components/workflow/patient-journey-guide";
 
 type PatientClinicalPanelProps = {
   patientId: string;
@@ -49,6 +50,7 @@ export function PatientClinicalPanel({ patientId, canStartEncounter }: PatientCl
   }, [patientId]);
 
   const activeVisit = visits.find((visit) => visit.status === "open" || visit.status === "in_progress");
+  const activeJourneyStep = activeVisit ? 3 : 2;
 
   if (loading) {
     return <div className="medical-card rounded-[2rem] p-6 text-sm text-slate-600">Loading visit history...</div>;
@@ -60,23 +62,30 @@ export function PatientClinicalPanel({ patientId, canStartEncounter }: PatientCl
 
   return (
     <div className="space-y-6">
+      <PatientJourneyGuide
+        activeStep={activeJourneyStep}
+        canStartEncounter={canStartEncounter}
+        compact
+        patientId={patientId}
+      />
+
       <section className="medical-card rounded-[2rem] p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h3 className="text-xl font-semibold text-slate-900">Encounter workflow</h3>
+            <h3 className="text-xl font-semibold text-slate-900">What to do next for this patient</h3>
             <p className="mt-2 text-sm text-slate-600">
-              Start, resume, or review this patient&apos;s consultations and clinical actions.
+              Start a doctor visit, resume the active visit, or review the full patient history before making decisions.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
             {activeVisit && (
               <Link href={`/patients/${patientId}/visits/${activeVisit.id}`} className="medical-button medical-button-secondary">
-                Open active visit
+                Continue active visit
               </Link>
             )}
             {canStartEncounter && (
               <Link href={`/patients/${patientId}/visits/new`} className="medical-button medical-button-primary">
-                Start visit
+                Start doctor visit
               </Link>
             )}
           </div>
@@ -85,7 +94,7 @@ export function PatientClinicalPanel({ patientId, canStartEncounter }: PatientCl
 
       <section className="grid gap-6 xl:grid-cols-[1fr_1.2fr]">
         <article className="medical-card rounded-[2rem] p-6">
-          <h3 className="text-xl font-semibold text-slate-900">Visit history</h3>
+          <h3 className="text-xl font-semibold text-slate-900">Previous doctor visits</h3>
           <div className="mt-5 space-y-3">
             {visits.length === 0 ? (
               <div className="rounded-2xl bg-slate-50 px-4 py-5 text-sm text-slate-600">
@@ -116,9 +125,9 @@ export function PatientClinicalPanel({ patientId, canStartEncounter }: PatientCl
         </article>
 
         <article className="medical-card rounded-[2rem] p-6">
-          <h3 className="text-xl font-semibold text-slate-900">Patient timeline</h3>
+          <h3 className="text-xl font-semibold text-slate-900">Full patient timeline</h3>
           <p className="mt-2 text-sm text-slate-600">
-            Unified chronology of visits, diagnoses, prescriptions, lab requests, and results.
+            One timeline for visits, vital signs, diagnoses, medicines, lab requests, and uploaded results.
           </p>
           <div className="mt-5 space-y-3">
             {timeline.length === 0 ? (

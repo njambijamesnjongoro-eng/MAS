@@ -9,6 +9,7 @@ import {
   AnalyticsLineChart,
   AnalyticsMetricCard,
 } from "@/components/dashboard/analytics-widgets";
+import { PatientJourneyGuide } from "@/components/workflow/patient-journey-guide";
 import { clearCachedAuthUser, getCachedAuthUser, setCachedAuthUser } from "@/lib/auth-user-cache";
 import { apiRequest } from "@/lib/client-api";
 import { formatCurrency, formatDate, formatDateTime, formatRoleLabel, formatStatusLabel } from "@/lib/format";
@@ -318,6 +319,8 @@ export function DashboardOverview() {
 
   return (
     <div className="space-y-6">
+      <PatientJourneyGuide activeStep={1} canStartEncounter={user.effective_role === "doctor"} />
+
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {metricCards.map((card) => (
           <AnalyticsMetricCard key={card.label} {...card} />
@@ -355,24 +358,24 @@ export function DashboardOverview() {
 
       <section className="grid min-w-0 gap-6 xl:grid-cols-[1.55fr_1fr]">
         <InsightList
-          title={isOperationalDashboard ? "Hospital operations snapshot" : "Clinical workflow snapshot"}
+          title={isOperationalDashboard ? "What needs action now" : "Doctor worklist"}
           subtitle={
             isOperationalDashboard
               ? "Admissions, bed occupancy, and finance queues prepared for fast administrative decisions."
-              : "Search, open, document, and close patient care with minimal clicks."
+              : "Open the patient chart, continue visits, review labs, and finish the consultation without hunting through menus."
           }
         >
           <div className="flex flex-wrap gap-3">
             <Link href="/patients" className="medical-button medical-button-secondary">
-              Search patient
+              Find patient
             </Link>
             {isOperationalDashboard ? (
               <Link href="/admissions" className="medical-button medical-button-primary">
-                Open admissions
+                Open wards
               </Link>
             ) : (
               <Link href="/imaging" className="medical-button medical-button-primary">
-                Open imaging
+                Check imaging
               </Link>
             )}
           </div>
@@ -507,15 +510,15 @@ export function DashboardOverview() {
 
         <InsightList
           title="Quick access"
-          subtitle="Designed for long clinical shifts: fewer clicks, clearer routing, and faster context switching."
+          subtitle="Plain-language shortcuts for the common hospital tasks during a shift."
         >
           <div className="grid gap-3">
             {[
-              { href: "/patients", label: "Patient search", helper: "Open demographics, profiles, and history." },
-              { href: "/admissions", label: "Admissions and beds", helper: "Coordinate wards, transfers, and discharge." },
-              { href: "/billing", label: "Billing and payments", helper: "Review invoices and record partial payments." },
-              { href: "/imaging", label: "Imaging workflow", helper: "Track requests, uploads, and result access." },
-              { href: "/reports", label: "Reports and exports", helper: "Generate finance and operational summaries." },
+              { href: "/patients", label: "Find or open a patient chart", helper: "Search by name, health ID, ID number, or phone." },
+              { href: "/appointments", label: "See appointments", helper: "Check booked patients and follow-up visits." },
+              { href: "/admissions", label: "Check wards and beds", helper: "Coordinate inpatients, transfers, and discharge." },
+              { href: "/billing", label: "Handle bills and payments", helper: "Review invoices and record partial payments." },
+              { href: "/imaging", label: "Check X-Ray and imaging", helper: "Track requests, uploads, and result access." },
             ].map((item) => (
               <Link
                 key={item.href}

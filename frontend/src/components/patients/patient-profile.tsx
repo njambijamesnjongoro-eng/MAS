@@ -106,7 +106,7 @@ export function PatientProfile({ patientId }: { patientId: string }) {
             </div>
             {canEditProfile && (
               <button type="button" onClick={() => setEditing(true)} className="medical-button medical-button-primary">
-                Edit profile
+                Update patient details
               </button>
             )}
           </div>
@@ -145,9 +145,9 @@ export function PatientProfile({ patientId }: { patientId: string }) {
         </article>
 
         <article className="medical-card rounded-[2rem] p-6">
-          <h3 className="text-xl font-semibold text-slate-900">Patient identifier</h3>
+          <h3 className="text-xl font-semibold text-slate-900">Patient ID and QR</h3>
           <p className="mt-2 text-sm text-slate-600">
-            QR code supports fast bedside and front-desk identification for later workflow phases.
+            Use this to confirm the right patient at reception, triage, bedside, pharmacy, and billing.
           </p>
           <div className="mt-6 rounded-[1.5rem] border border-dashed border-[var(--border-strong)] bg-white p-4">
             <Image
@@ -169,7 +169,7 @@ export function PatientProfile({ patientId }: { patientId: string }) {
 
       <section className="grid gap-6 xl:grid-cols-2">
         <article className="medical-card rounded-[2rem] p-6">
-          <h3 className="text-xl font-semibold text-slate-900">Alerts and conditions</h3>
+          <h3 className="text-xl font-semibold text-slate-900">Safety alerts</h3>
           <div className="mt-5 space-y-4">
             <div>
               <div className="text-sm font-semibold text-slate-700">Allergies</div>
@@ -185,7 +185,7 @@ export function PatientProfile({ patientId }: { patientId: string }) {
         </article>
 
         <article className="medical-card rounded-[2rem] p-6">
-          <h3 className="text-xl font-semibold text-slate-900">Medical history foundation</h3>
+          <h3 className="text-xl font-semibold text-slate-900">Medical history</h3>
           <div className="mt-5 space-y-4 text-sm leading-7 text-slate-600">
             <div>
               <div className="font-semibold text-slate-700">Summary</div>

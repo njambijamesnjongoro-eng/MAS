@@ -28,6 +28,7 @@ const navigationIcons: Record<string, React.ReactNode> = {
   dashboard: <NavigationIcon path="M4 12.5 12 4l8 8.5M6.5 10.5v8h11v-8" />,
   patients: <NavigationIcon path="M7 18v-1.5A3.5 3.5 0 0 1 10.5 13h3A3.5 3.5 0 0 1 17 16.5V18M9.5 8.5A2.5 2.5 0 1 0 14.5 8.5A2.5 2.5 0 1 0 9.5 8.5" />,
   admissions: <NavigationIcon path="M5 19V7.5A1.5 1.5 0 0 1 6.5 6h11A1.5 1.5 0 0 1 19 7.5V19M9 6V4.5M15 6V4.5M8.5 12h7M12 8.5v7" />,
+  appointments: <NavigationIcon path="M7 5.5h10A1.5 1.5 0 0 1 18.5 7v10A1.5 1.5 0 0 1 17 18.5H7A1.5 1.5 0 0 1 5.5 17V7A1.5 1.5 0 0 1 7 5.5zM8.5 4v3M15.5 4v3M8 10h8M8.5 14h2.5" />,
   billing: <NavigationIcon path="M7 6.5h10v11H7zM9.5 10.5h5M9.5 13.5h5M12 6.5v-2" />,
   imaging: <NavigationIcon path="M5 7.5A1.5 1.5 0 0 1 6.5 6h11A1.5 1.5 0 0 1 19 7.5v9A1.5 1.5 0 0 1 17.5 18h-11A1.5 1.5 0 0 1 5 16.5zM8.5 14l2.5-2.5 2 2 2.5-3 1.5 2" />,
   reports: <NavigationIcon path="M7 18V6h10v12M9.5 14h5M9.5 10.5h5M9.5 7.5h3" />,
@@ -36,63 +37,68 @@ const navigationIcons: Record<string, React.ReactNode> = {
 
 const roleNavMap: Record<RoleCode, NavigationItem[]> = {
   super_admin: [
-    { href: "/dashboard", label: "Dashboard", icon: navigationIcons.dashboard },
-    { href: "/patients", label: "Patient Search", icon: navigationIcons.patients },
-    { href: "/patients/register", label: "Register Patient", icon: navigationIcons.patients },
-    { href: "/admissions", label: "Admissions", icon: navigationIcons.admissions },
-    { href: "/billing", label: "Billing", icon: navigationIcons.billing },
-    { href: "/imaging", label: "Imaging", icon: navigationIcons.imaging },
+    { href: "/dashboard", label: "Today / Patient Flow", icon: navigationIcons.dashboard },
+    { href: "/patients", label: "Find Patient", icon: navigationIcons.patients },
+    { href: "/patients/register", label: "New Patient", icon: navigationIcons.patients },
+    { href: "/appointments", label: "Appointments", icon: navigationIcons.appointments },
+    { href: "/admissions", label: "Wards & Beds", icon: navigationIcons.admissions },
+    { href: "/billing", label: "Bills & Payments", icon: navigationIcons.billing },
+    { href: "/imaging", label: "X-Ray / Imaging", icon: navigationIcons.imaging },
     { href: "/reports", label: "Reports", icon: navigationIcons.reports },
-    { href: "/notifications", label: "Notifications", icon: navigationIcons.notifications },
+    { href: "/notifications", label: "Messages", icon: navigationIcons.notifications },
   ],
   hospital_admin: [
-    { href: "/dashboard", label: "Dashboard", icon: navigationIcons.dashboard },
-    { href: "/patients", label: "Patient Search", icon: navigationIcons.patients },
-    { href: "/patients/register", label: "Register Patient", icon: navigationIcons.patients },
-    { href: "/admissions", label: "Admissions", icon: navigationIcons.admissions },
-    { href: "/billing", label: "Billing", icon: navigationIcons.billing },
-    { href: "/imaging", label: "Imaging", icon: navigationIcons.imaging },
+    { href: "/dashboard", label: "Today / Patient Flow", icon: navigationIcons.dashboard },
+    { href: "/patients", label: "Find Patient", icon: navigationIcons.patients },
+    { href: "/patients/register", label: "New Patient", icon: navigationIcons.patients },
+    { href: "/appointments", label: "Appointments", icon: navigationIcons.appointments },
+    { href: "/admissions", label: "Wards & Beds", icon: navigationIcons.admissions },
+    { href: "/billing", label: "Bills & Payments", icon: navigationIcons.billing },
+    { href: "/imaging", label: "X-Ray / Imaging", icon: navigationIcons.imaging },
     { href: "/reports", label: "Reports", icon: navigationIcons.reports },
-    { href: "/notifications", label: "Notifications", icon: navigationIcons.notifications },
+    { href: "/notifications", label: "Messages", icon: navigationIcons.notifications },
   ],
   doctor: [
-    { href: "/dashboard", label: "Clinical Dashboard", icon: navigationIcons.dashboard },
-    { href: "/patients", label: "Patient Search", icon: navigationIcons.patients },
-    { href: "/admissions", label: "Admissions", icon: navigationIcons.admissions },
-    { href: "/imaging", label: "Imaging", icon: navigationIcons.imaging },
-    { href: "/notifications", label: "Notifications", icon: navigationIcons.notifications },
+    { href: "/dashboard", label: "Today / Patient Flow", icon: navigationIcons.dashboard },
+    { href: "/patients", label: "Find Patient", icon: navigationIcons.patients },
+    { href: "/appointments", label: "Appointments", icon: navigationIcons.appointments },
+    { href: "/admissions", label: "Inpatients / Beds", icon: navigationIcons.admissions },
+    { href: "/imaging", label: "X-Ray / Imaging", icon: navigationIcons.imaging },
+    { href: "/notifications", label: "Messages", icon: navigationIcons.notifications },
   ],
   nurse: [
-    { href: "/dashboard", label: "Dashboard", icon: navigationIcons.dashboard },
-    { href: "/patients", label: "Patient Search", icon: navigationIcons.patients },
-    { href: "/patients/register", label: "Register Patient", icon: navigationIcons.patients },
-    { href: "/admissions", label: "Admissions", icon: navigationIcons.admissions },
-    { href: "/notifications", label: "Notifications", icon: navigationIcons.notifications },
+    { href: "/dashboard", label: "Today / Patient Flow", icon: navigationIcons.dashboard },
+    { href: "/patients", label: "Find Patient", icon: navigationIcons.patients },
+    { href: "/patients/register", label: "New Patient", icon: navigationIcons.patients },
+    { href: "/appointments", label: "Appointments", icon: navigationIcons.appointments },
+    { href: "/admissions", label: "Wards & Beds", icon: navigationIcons.admissions },
+    { href: "/notifications", label: "Messages", icon: navigationIcons.notifications },
   ],
   lab_technician: [
-    { href: "/dashboard", label: "Dashboard", icon: navigationIcons.dashboard },
-    { href: "/patients", label: "Patient Search", icon: navigationIcons.patients },
-    { href: "/imaging", label: "Imaging", icon: navigationIcons.imaging },
-    { href: "/notifications", label: "Notifications", icon: navigationIcons.notifications },
+    { href: "/dashboard", label: "Today / Lab Queue", icon: navigationIcons.dashboard },
+    { href: "/patients", label: "Find Patient", icon: navigationIcons.patients },
+    { href: "/imaging", label: "X-Ray / Imaging", icon: navigationIcons.imaging },
+    { href: "/notifications", label: "Messages", icon: navigationIcons.notifications },
   ],
   pharmacist: [
-    { href: "/dashboard", label: "Dashboard", icon: navigationIcons.dashboard },
-    { href: "/patients", label: "Patient Search", icon: navigationIcons.patients },
-    { href: "/billing", label: "Billing", icon: navigationIcons.billing },
-    { href: "/notifications", label: "Notifications", icon: navigationIcons.notifications },
+    { href: "/dashboard", label: "Today / Pharmacy Queue", icon: navigationIcons.dashboard },
+    { href: "/patients", label: "Find Patient", icon: navigationIcons.patients },
+    { href: "/billing", label: "Bills & Payments", icon: navigationIcons.billing },
+    { href: "/notifications", label: "Messages", icon: navigationIcons.notifications },
   ],
   receptionist: [
-    { href: "/dashboard", label: "Dashboard", icon: navigationIcons.dashboard },
-    { href: "/patients", label: "Patient Search", icon: navigationIcons.patients },
-    { href: "/patients/register", label: "Register Patient", icon: navigationIcons.patients },
-    { href: "/admissions", label: "Admissions", icon: navigationIcons.admissions },
-    { href: "/billing", label: "Billing", icon: navigationIcons.billing },
-    { href: "/notifications", label: "Notifications", icon: navigationIcons.notifications },
+    { href: "/dashboard", label: "Today / Front Desk", icon: navigationIcons.dashboard },
+    { href: "/patients", label: "Find Patient", icon: navigationIcons.patients },
+    { href: "/patients/register", label: "New Patient", icon: navigationIcons.patients },
+    { href: "/appointments", label: "Appointments", icon: navigationIcons.appointments },
+    { href: "/admissions", label: "Wards & Beds", icon: navigationIcons.admissions },
+    { href: "/billing", label: "Bills & Payments", icon: navigationIcons.billing },
+    { href: "/notifications", label: "Messages", icon: navigationIcons.notifications },
   ],
   patient: [
-    { href: "/dashboard", label: "Dashboard", icon: navigationIcons.dashboard },
+    { href: "/dashboard", label: "My Home", icon: navigationIcons.dashboard },
     { href: "/patients", label: "My Record", icon: navigationIcons.patients },
-    { href: "/notifications", label: "Notifications", icon: navigationIcons.notifications },
+    { href: "/notifications", label: "Messages", icon: navigationIcons.notifications },
   ],
 };
 
@@ -167,14 +173,14 @@ export function AppShell({ title, description, children }: AppShellProps) {
         >
           <div className="medical-brand-panel rounded-[1.6rem] border border-white/10 p-5">
             <div className="medical-brand-muted text-xs uppercase tracking-[0.24em]">Hospital EHR</div>
-            <h1 className="mt-2 text-2xl font-semibold">Enterprise Care</h1>
+            <h1 className="mt-2 text-2xl font-semibold">Hospital Workflow</h1>
             <p className="medical-brand-muted mt-2 text-sm">
-              Fast clinical operations for patient care, admissions, billing, imaging, and secure internal coordination.
+              Follow each patient from arrival, triage, doctor visit, orders, billing, and follow-up.
             </p>
           </div>
 
           <div className="mt-6 flex-1 overflow-y-auto">
-            <div className="text-xs font-semibold uppercase tracking-[0.2em] text-medical-muted">Navigation</div>
+            <div className="text-xs font-semibold uppercase tracking-[0.2em] text-medical-muted">Where to go</div>
             <nav className="mt-3 space-y-2">
               {navigation.map((item) => {
                 const isActive = pathname === item.href;

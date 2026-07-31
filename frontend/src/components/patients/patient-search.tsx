@@ -6,6 +6,7 @@ import { useDeferredValue, useEffect, useState } from "react";
 import { apiRequest } from "@/lib/client-api";
 import { formatDate } from "@/lib/format";
 import type { PaginatedResponse, PatientSummary } from "@/types";
+import { PatientJourneyGuide } from "@/components/workflow/patient-journey-guide";
 
 function EmptyState({ message }: { message: string }) {
   return <div className="medical-empty-state rounded-2xl px-4 py-5 text-sm">{message}</div>;
@@ -66,25 +67,27 @@ export function PatientSearch() {
 
   return (
     <div className="space-y-6">
+      <PatientJourneyGuide activeStep={1} compact />
+
       <section className="medical-card medical-hero rounded-[2rem] p-6">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <div className="medical-badge">Fast indexed search</div>
-            <h3 className="mt-3 text-2xl font-semibold text-medical-primary">Patient directory lookup</h3>
+            <div className="medical-badge">Step 1 - Find the patient</div>
+            <h3 className="mt-3 text-2xl font-semibold text-medical-primary">Find patient and open chart</h3>
             <p className="mt-2 max-w-2xl text-sm leading-7 text-medical-secondary">
-              Search by identity, filter quickly, and move straight into a patient record with minimal clicks.
+              When a patient arrives, search here first. If they are new, register them. If they already exist, open the chart and continue care.
             </p>
           </div>
 
           <Link href="/patients/register" className="medical-button medical-button-primary whitespace-nowrap">
-            Register patient
+            Register new patient
           </Link>
         </div>
 
         <div className="mt-6 grid gap-4 lg:grid-cols-[2fr_1fr_1fr]">
           <input
             className="medical-input"
-            placeholder="Search by name, health ID, national ID, or phone"
+            placeholder="Type patient name, health ID, ID number, or phone"
             value={search}
             onChange={(event) => {
               setSearch(event.target.value);
@@ -129,7 +132,9 @@ export function PatientSearch() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <h3 className="text-xl font-semibold text-medical-primary">Patient directory</h3>
-            <p className="mt-2 text-sm text-medical-secondary">Results update as you type and stay paginated for speed.</p>
+            <p className="mt-2 text-sm text-medical-secondary">
+              Choose the correct patient, then open the chart to review alerts, visits, labs, medicines, and next steps.
+            </p>
           </div>
           {data && <div className="medical-badge">{data.count} total matches</div>}
         </div>
@@ -197,7 +202,7 @@ export function PatientSearch() {
                     <td>{formatDate(patient.created_at)}</td>
                     <td>
                       <Link href={`/patients/${patient.id}`} className="medical-button medical-button-ghost">
-                        Open profile
+                        Open chart
                       </Link>
                     </td>
                   </tr>
