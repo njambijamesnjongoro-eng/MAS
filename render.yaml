@@ -16,9 +16,7 @@ envVarGroups:
       - key: DJANGO_CSRF_TRUSTED_ORIGINS
         value: https://*.vercel.app,http://localhost:3000
       - key: DB_ENGINE
-        value: postgresql
-      - key: POSTGRES_SSLMODE
-        value: require
+        value: sqlite
       - key: PYTHON_VERSION
         value: 3.14.3
       - key: CELERY_TASK_ALWAYS_EAGER
@@ -57,29 +55,3 @@ services:
     healthCheckPath: /api/health/
     envVars:
       - fromGroup: hospital-ehr-free-shared
-      - key: POSTGRES_DB
-        fromDatabase:
-          name: hospital-ehr-db-free
-          property: database
-      - key: POSTGRES_USER
-        fromDatabase:
-          name: hospital-ehr-db-free
-          property: user
-      - key: POSTGRES_PASSWORD
-        fromDatabase:
-          name: hospital-ehr-db-free
-          property: password
-      - key: POSTGRES_HOST
-        fromDatabase:
-          name: hospital-ehr-db-free
-          property: host
-      - key: POSTGRES_PORT
-        fromDatabase:
-          name: hospital-ehr-db-free
-          property: port
-
-databases:
-  - name: hospital-ehr-db-free
-    plan: free
-    databaseName: hospital_ehr
-    user: ehr_user

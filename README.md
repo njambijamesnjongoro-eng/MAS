@@ -279,16 +279,17 @@ Service entry points:
 - Keep `SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`, and `SECURE_SSL_REDIRECT` enabled in production.
 - Run both Celery worker and Celery beat in production so appointment reminders and retry jobs execute automatically.
 - Configure `AFRICASTALKING_*` and email credentials before enabling live reminders.
-- `render.yaml` is the default free-tier Render backend blueprint for Vercel + Render deployments. It creates one Django web service and one PostgreSQL database.
+- `render.yaml` is the default free-tier Render backend blueprint for Vercel + Render deployments. It creates one Django web service in SQLite demo mode so the app can run without a paid managed database.
 
 ### 5. Free-tier deployment notes
 
-- For a zero-cost demo deployment, use Vercel for `frontend` and Render for the Django `backend` plus PostgreSQL.
+- For a zero-cost demo deployment, use Vercel for `frontend` and Render for the Django `backend` in SQLite demo mode.
+- For production hospital use, set `DB_ENGINE=postgresql` and attach a managed PostgreSQL database before deploying.
 - In that setup, set `CELERY_TASK_ALWAYS_EAGER=True` and `APPOINTMENT_REMINDER_INLINE_MODE=True` on the backend so notification and reminder tasks run inside the web process.
 - The default [render.yaml](./render.yaml) runs migrations and `seed_free_demo` during deploy, then starts Gunicorn directly. This keeps the free web service lightweight during cold starts and health checks.
 - Set `APPOINTMENT_CRON_SECRET` on both backend and frontend, and set `CRON_SECRET` on Vercel. The included [frontend/vercel.json](./frontend/vercel.json) schedules a once-daily Vercel cron that calls the backend reminder endpoint.
 - Free Render web services block outbound SMTP ports, so use `SENDGRID_API_KEY` for HTTP API email delivery instead of SMTP when deploying on free Render.
-- Free Render web services spin down after 15 minutes of inactivity, and free Render Postgres expires after 30 days. This is suitable for demos and testing, not for production hospital operations.
+- Free Render web services spin down after 15 minutes of inactivity. The SQLite demo database is suitable for demos and testing only, not for production hospital operations.
 
 ## Local verification performed
 
@@ -299,7 +300,7 @@ Service entry points:
 - `npm run lint`
 - `npm run build`
 
-SQLite was used only as a local validation fallback. Primary runtime target remains PostgreSQL.
+SQLite is used for local validation and the zero-cost Render demo. Primary production runtime target remains PostgreSQL.
 
 ## Additional docs
 
