@@ -13,23 +13,75 @@ type LoginResponse = {
   user?: AuthUser;
 };
 
+type WarmupResponse = {
+  ok?: boolean;
+  duration_ms?: number;
+};
+
+type ServerStatus = "checking" | "ready" | "slow" | "offline";
+
 export function LoginForm() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [slowLogin, setSlowLogin] = useState(false);
+  const [serverStatus, setServerStatus] = useState<ServerStatus>("checking");
+  const [warmupMs, setWarmupMs] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let active = true;
+    let slowTimer: number | null = null;
+
+    async function warmBackend() {
+      const startedAt = Date.now();
+      slowTimer = window.setTimeout(() => {
+        if (active) {
+          setServerStatus("slow");
+        }
+      }, 4500);
+
+      try {
+        const response = await fetch("/api/system/warmup", { cache: "no-store" });
+        const payload = (await response.json().catch(() => ({}))) as WarmupResponse;
+        if (!active) {
+          return;
+        }
+        setWarmupMs(payload.duration_ms ?? Date.now() - startedAt);
+        setServerStatus(response.ok ? "ready" : "offline");
+      } catch {
+        if (active) {
+          setServerStatus("offline");
+        }
+      } finally {
+        if (slowTimer) {
+          window.clearTimeout(slowTimer);
+        }
+      }
+    }
+
     router.prefetch("/dashboard");
-    void fetch("/api/system/warmup", { cache: "no-store" }).catch(() => undefined);
+    void warmBackend();
+
+    return () => {
+      active = false;
+      if (slowTimer) {
+        window.clearTimeout(slowTimer);
+      }
+    };
   }, [router]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
+    setSlowLogin(false);
     setError(null);
+
+    const slowLoginTimer = window.setTimeout(() => {
+      setSlowLogin(true);
+    }, 6000);
 
     try {
       const response = await fetch("/api/auth/login", {
@@ -57,11 +109,40 @@ export function LoginForm() {
 
       router.replace("/dashboard");
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Login failed.");
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "Login failed. If the hospital server is waking up, wait one minute and try again.",
+      );
     } finally {
+      window.clearTimeout(slowLoginTimer);
       setLoading(false);
+      setSlowLogin(false);
     }
   }
+
+  const serverStatusView = {
+    checking: {
+      label: "Checking hospital server",
+      helper: "Preparing the secure backend before you sign in.",
+      className: "border border-[var(--border)] bg-[var(--panel-muted)] text-medical-secondary",
+    },
+    slow: {
+      label: "Server is waking up",
+      helper: "Free Render hosting can sleep. First login may take 30-60 seconds, then it becomes fast.",
+      className: "border border-[var(--border)] bg-[var(--panel-muted)] text-medical-secondary",
+    },
+    ready: {
+      label: "Server ready",
+      helper: warmupMs ? `Backend responded in ${(warmupMs / 1000).toFixed(1)}s.` : "You can sign in now.",
+      className: "border border-[var(--border)] bg-[var(--panel-muted)] text-medical-secondary",
+    },
+    offline: {
+      label: "Server not reachable",
+      helper: "Check Render backend status, then try again. Your username and password may still be correct.",
+      className: "border border-red-200 bg-red-50 text-red-700",
+    },
+  }[serverStatus];
 
   return (
     <form onSubmit={handleSubmit} className="medical-card medical-hero w-full rounded-[2rem] p-8 shadow-[0_24px_60px_rgba(15,23,42,0.18)]">
@@ -118,8 +199,19 @@ export function LoginForm() {
 
       {error && <div className="mt-5 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
 
+      <div className={`mt-5 rounded-[1.4rem] px-4 py-3 text-sm ${serverStatusView.className}`}>
+        <div className="font-semibold text-medical-primary">{serverStatusView.label}</div>
+        <div className="mt-1 leading-6">{serverStatusView.helper}</div>
+      </div>
+
+      {slowLogin && (
+        <div className="medical-subtle-panel mt-5 rounded-[1.4rem] px-4 py-3 text-sm leading-6 text-medical-secondary">
+          Still connecting to the hospital server. Please do not press login again; the secure backend may be waking up.
+        </div>
+      )}
+
       <button type="submit" disabled={loading} className="medical-button medical-button-primary mt-8 w-full">
-        {loading ? "Signing in..." : "Login"}
+        {loading ? (slowLogin ? "Still connecting..." : "Signing in...") : "Login"}
       </button>
 
       <div className="mt-5 rounded-[1.4rem] border border-[var(--border)] bg-[var(--panel-contrast)] px-4 py-4 text-sm text-medical-secondary">
