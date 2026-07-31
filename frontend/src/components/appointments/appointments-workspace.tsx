@@ -76,7 +76,7 @@ export function AppointmentsWorkspace() {
         }
       } catch (error) {
         if (!cancelled) {
-          setToast({ message: error instanceof Error ? error.message : "Unable to load doctors.", tone: "error" });
+          setToast({ message: error instanceof Error ? error.message : "Unable to load clinicians.", tone: "error" });
         }
       }
     }
@@ -185,7 +185,7 @@ export function AppointmentsWorkspace() {
             <div className="medical-badge">Booking and follow-up coordination</div>
             <h3 className="mt-3 text-2xl font-semibold text-medical-primary">Schedule an appointment</h3>
             <p className="mt-2 max-w-3xl text-sm leading-7 text-medical-secondary">
-              Book the patient, assign the doctor, and capture the contact channels the reminder engine will use before the visit.
+              Book the patient, assign the clinician or doctor, and capture the contact channels the reminder engine will use before the visit.
             </p>
           </div>
           <Link href="/reminders" className="medical-button medical-button-secondary">
@@ -224,13 +224,13 @@ export function AppointmentsWorkspace() {
           </div>
 
           <div>
-            <label className="medical-label">Doctor</label>
+            <label className="medical-label">Clinician / Doctor</label>
             <select
               className="medical-input"
               value={form.doctor}
               onChange={(event) => setForm((current) => ({ ...current, doctor: event.target.value }))}
             >
-              <option value="">Select doctor</option>
+              <option value="">Select clinician</option>
               {doctors.map((doctor) => (
                 <option key={doctor.id} value={doctor.id}>
                   {doctor.full_name}

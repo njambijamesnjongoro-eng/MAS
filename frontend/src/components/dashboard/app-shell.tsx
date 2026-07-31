@@ -58,6 +58,15 @@ const roleNavMap: Record<RoleCode, NavigationItem[]> = {
     { href: "/reports", label: "Reports", icon: navigationIcons.reports },
     { href: "/notifications", label: "Messages", icon: navigationIcons.notifications },
   ],
+  clinical_officer: [
+    { href: "/dashboard", label: "Today / Patient Flow", icon: navigationIcons.dashboard },
+    { href: "/patients", label: "Find Patient", icon: navigationIcons.patients },
+    { href: "/patients/register", label: "New Patient", icon: navigationIcons.patients },
+    { href: "/appointments", label: "Appointments", icon: navigationIcons.appointments },
+    { href: "/admissions", label: "Inpatients / Beds", icon: navigationIcons.admissions },
+    { href: "/imaging", label: "X-Ray / Imaging", icon: navigationIcons.imaging },
+    { href: "/notifications", label: "Messages", icon: navigationIcons.notifications },
+  ],
   doctor: [
     { href: "/dashboard", label: "Today / Patient Flow", icon: navigationIcons.dashboard },
     { href: "/patients", label: "Find Patient", icon: navigationIcons.patients },
@@ -186,7 +195,7 @@ export function AppShell({ title, description, children }: AppShellProps) {
             <div className="medical-brand-muted text-xs uppercase tracking-[0.24em]">Hospital EHR</div>
             <h1 className="mt-2 text-2xl font-semibold">Hospital Workflow</h1>
             <p className="medical-brand-muted mt-2 text-sm">
-              Follow each patient from arrival, triage, doctor visit, orders, billing, and follow-up.
+              Follow each patient from arrival, triage, clinician visit, orders, billing, and follow-up.
             </p>
           </div>
 

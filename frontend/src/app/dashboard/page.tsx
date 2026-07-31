@@ -5,7 +5,7 @@ export default function DashboardPage() {
   return (
     <AppShell
       title="Today / Patient Flow"
-      description="Start here each shift. Follow patients from arrival to triage, doctor consultation, orders, billing, admission, and follow-up."
+      description="Start here each shift. Follow patients from arrival to triage, clinician consultation, orders, billing, admission, and follow-up."
     >
       <DashboardOverview />
     </AppShell>

@@ -7,6 +7,7 @@ from accounts.constants import RoleCode
 STAFF_VIEW_ROLES = {
     RoleCode.SUPER_ADMIN,
     RoleCode.HOSPITAL_ADMIN,
+    RoleCode.CLINICAL_OFFICER,
     RoleCode.DOCTOR,
     RoleCode.NURSE,
     RoleCode.LAB_TECHNICIAN,
@@ -17,6 +18,7 @@ STAFF_VIEW_ROLES = {
 PATIENT_CREATE_ROLES = {
     RoleCode.SUPER_ADMIN,
     RoleCode.HOSPITAL_ADMIN,
+    RoleCode.CLINICAL_OFFICER,
     RoleCode.NURSE,
     RoleCode.RECEPTIONIST,
 }
@@ -24,6 +26,7 @@ PATIENT_CREATE_ROLES = {
 PATIENT_EDIT_ROLES = {
     RoleCode.SUPER_ADMIN,
     RoleCode.HOSPITAL_ADMIN,
+    RoleCode.CLINICAL_OFFICER,
     RoleCode.DOCTOR,
     RoleCode.NURSE,
     RoleCode.RECEPTIONIST,
@@ -37,6 +40,7 @@ PATIENT_DELETE_ROLES = {
 PATIENT_HISTORY_EDIT_ROLES = {
     RoleCode.SUPER_ADMIN,
     RoleCode.HOSPITAL_ADMIN,
+    RoleCode.CLINICAL_OFFICER,
     RoleCode.DOCTOR,
     RoleCode.NURSE,
 }
@@ -49,6 +53,7 @@ AUDIT_VIEW_ROLES = {
 VISIT_VIEW_ROLES = {
     RoleCode.SUPER_ADMIN,
     RoleCode.HOSPITAL_ADMIN,
+    RoleCode.CLINICAL_OFFICER,
     RoleCode.DOCTOR,
     RoleCode.NURSE,
     RoleCode.LAB_TECHNICIAN,
@@ -58,12 +63,14 @@ VISIT_VIEW_ROLES = {
 VISIT_EDIT_ROLES = {
     RoleCode.SUPER_ADMIN,
     RoleCode.HOSPITAL_ADMIN,
+    RoleCode.CLINICAL_OFFICER,
     RoleCode.DOCTOR,
 }
 
 VITALS_VIEW_ROLES = {
     RoleCode.SUPER_ADMIN,
     RoleCode.HOSPITAL_ADMIN,
+    RoleCode.CLINICAL_OFFICER,
     RoleCode.DOCTOR,
     RoleCode.NURSE,
 }
@@ -71,6 +78,7 @@ VITALS_VIEW_ROLES = {
 VITALS_EDIT_ROLES = {
     RoleCode.SUPER_ADMIN,
     RoleCode.HOSPITAL_ADMIN,
+    RoleCode.CLINICAL_OFFICER,
     RoleCode.DOCTOR,
     RoleCode.NURSE,
 }
@@ -78,6 +86,7 @@ VITALS_EDIT_ROLES = {
 DIAGNOSIS_VIEW_ROLES = {
     RoleCode.SUPER_ADMIN,
     RoleCode.HOSPITAL_ADMIN,
+    RoleCode.CLINICAL_OFFICER,
     RoleCode.DOCTOR,
     RoleCode.NURSE,
 }
@@ -85,12 +94,14 @@ DIAGNOSIS_VIEW_ROLES = {
 DIAGNOSIS_EDIT_ROLES = {
     RoleCode.SUPER_ADMIN,
     RoleCode.HOSPITAL_ADMIN,
+    RoleCode.CLINICAL_OFFICER,
     RoleCode.DOCTOR,
 }
 
 PRESCRIPTION_VIEW_ROLES = {
     RoleCode.SUPER_ADMIN,
     RoleCode.HOSPITAL_ADMIN,
+    RoleCode.CLINICAL_OFFICER,
     RoleCode.DOCTOR,
     RoleCode.NURSE,
     RoleCode.PHARMACIST,
@@ -99,6 +110,7 @@ PRESCRIPTION_VIEW_ROLES = {
 PRESCRIPTION_EDIT_ROLES = {
     RoleCode.SUPER_ADMIN,
     RoleCode.HOSPITAL_ADMIN,
+    RoleCode.CLINICAL_OFFICER,
     RoleCode.DOCTOR,
 }
 
@@ -111,6 +123,7 @@ PRESCRIPTION_DISPENSE_ROLES = {
 LAB_REQUEST_VIEW_ROLES = {
     RoleCode.SUPER_ADMIN,
     RoleCode.HOSPITAL_ADMIN,
+    RoleCode.CLINICAL_OFFICER,
     RoleCode.DOCTOR,
     RoleCode.NURSE,
     RoleCode.LAB_TECHNICIAN,
@@ -119,6 +132,7 @@ LAB_REQUEST_VIEW_ROLES = {
 LAB_REQUEST_EDIT_ROLES = {
     RoleCode.SUPER_ADMIN,
     RoleCode.HOSPITAL_ADMIN,
+    RoleCode.CLINICAL_OFFICER,
     RoleCode.DOCTOR,
 }
 
@@ -131,6 +145,7 @@ LAB_RESULT_EDIT_ROLES = {
 TIMELINE_VIEW_ROLES = {
     RoleCode.SUPER_ADMIN,
     RoleCode.HOSPITAL_ADMIN,
+    RoleCode.CLINICAL_OFFICER,
     RoleCode.DOCTOR,
     RoleCode.NURSE,
 }
@@ -138,6 +153,7 @@ TIMELINE_VIEW_ROLES = {
 ADMISSION_VIEW_ROLES = {
     RoleCode.SUPER_ADMIN,
     RoleCode.HOSPITAL_ADMIN,
+    RoleCode.CLINICAL_OFFICER,
     RoleCode.DOCTOR,
     RoleCode.NURSE,
     RoleCode.RECEPTIONIST,
@@ -146,6 +162,7 @@ ADMISSION_VIEW_ROLES = {
 ADMISSION_EDIT_ROLES = {
     RoleCode.SUPER_ADMIN,
     RoleCode.HOSPITAL_ADMIN,
+    RoleCode.CLINICAL_OFFICER,
     RoleCode.DOCTOR,
     RoleCode.NURSE,
 }
@@ -177,6 +194,7 @@ PAYMENT_EDIT_ROLES = {
 IMAGING_VIEW_ROLES = {
     RoleCode.SUPER_ADMIN,
     RoleCode.HOSPITAL_ADMIN,
+    RoleCode.CLINICAL_OFFICER,
     RoleCode.DOCTOR,
     RoleCode.NURSE,
     RoleCode.LAB_TECHNICIAN,
@@ -185,6 +203,7 @@ IMAGING_VIEW_ROLES = {
 IMAGING_REQUEST_EDIT_ROLES = {
     RoleCode.SUPER_ADMIN,
     RoleCode.HOSPITAL_ADMIN,
+    RoleCode.CLINICAL_OFFICER,
     RoleCode.DOCTOR,
 }
 
@@ -204,6 +223,7 @@ REPORT_VIEW_ROLES = {
 APPOINTMENT_VIEW_ROLES = {
     RoleCode.SUPER_ADMIN,
     RoleCode.HOSPITAL_ADMIN,
+    RoleCode.CLINICAL_OFFICER,
     RoleCode.DOCTOR,
     RoleCode.NURSE,
     RoleCode.RECEPTIONIST,
@@ -212,6 +232,7 @@ APPOINTMENT_VIEW_ROLES = {
 APPOINTMENT_EDIT_ROLES = {
     RoleCode.SUPER_ADMIN,
     RoleCode.HOSPITAL_ADMIN,
+    RoleCode.CLINICAL_OFFICER,
     RoleCode.DOCTOR,
     RoleCode.NURSE,
     RoleCode.RECEPTIONIST,

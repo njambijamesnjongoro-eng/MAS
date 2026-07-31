@@ -452,7 +452,7 @@ def build_appointment_reminder_dashboard_summary():
 
 def validate_appointment_doctor(user) -> bool:
     role_code = get_role_code(user)
-    return role_code == RoleCode.DOCTOR or getattr(user, "is_superuser", False)
+    return role_code in {RoleCode.CLINICAL_OFFICER, RoleCode.DOCTOR} or getattr(user, "is_superuser", False)
 
 
 def normalize_appointment_payload(validated_data: dict):

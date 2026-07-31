@@ -150,7 +150,7 @@ def build_clinical_dashboard_summary(user):
     visit_queryset = Visit.objects.select_related("patient", "doctor")
     pending_lab_queryset = LabRequest.objects.select_related("patient", "visit")
 
-    if role == RoleCode.DOCTOR:
+    if role in {RoleCode.CLINICAL_OFFICER, RoleCode.DOCTOR}:
         visit_queryset = visit_queryset.filter(doctor=user)
         pending_lab_queryset = pending_lab_queryset.filter(requested_by=user)
 

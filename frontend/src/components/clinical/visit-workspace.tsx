@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { apiRequest } from "@/lib/client-api";
 import { formatDateTime, formatRoleLabel, formatStatusLabel } from "@/lib/format";
+import { canEditVitalsRole, canStartEncounterRole } from "@/lib/role-access";
 import type { AuthUser, LabRequest, PatientDetail, Prescription, VisitDetail } from "@/types";
 import { PatientJourneyGuide } from "@/components/workflow/patient-journey-guide";
 
@@ -275,7 +276,7 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
   }, [draftKey, patientId, visitId]);
 
   const canEditEncounter = useMemo(() => {
-    return user ? ["doctor", "hospital_admin", "super_admin"].includes(user.effective_role) : false;
+    return canStartEncounterRole(user?.effective_role);
   }, [user]);
 
   useEffect(() => {
@@ -296,7 +297,7 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
   }, [canEditEncounter, draftAutosaveEnabled, draftKey, form, loading, patient]);
 
   const canEditVitals = useMemo(() => {
-    return user ? ["doctor", "nurse", "hospital_admin", "super_admin"].includes(user.effective_role) : false;
+    return canEditVitalsRole(user?.effective_role);
   }, [user]);
   const canDispense = useMemo(() => {
     return user ? ["pharmacist", "hospital_admin", "super_admin"].includes(user.effective_role) : false;
@@ -531,7 +532,7 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
               <h3 className="mt-3 text-lg font-semibold text-medical-primary">Recover interrupted consultation notes</h3>
               <p className="mt-2 max-w-3xl text-sm leading-7 text-medical-secondary">
                 A local draft from {formatDraftTime(draftNotice.savedAt)} was found on this device. Restore it if
-                the internet or power failed while the doctor was typing. Discard it on shared computers after saving
+                the internet or power failed while the clinician was typing. Discard it on shared computers after saving
                 the real visit.
               </p>
             </div>
@@ -606,7 +607,7 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
         <article id="visit-story" className="medical-card scroll-mt-24 rounded-[2rem] p-6">
           <h4 className="text-xl font-semibold text-slate-900">Step 1: Ask what brought the patient in</h4>
           <p className="mt-2 text-sm text-slate-600">
-            Capture the patient story first. This is the main consultation note doctors will return to later.
+            Capture the patient story first. This is the main consultation note clinicians will return to later.
           </p>
           <div className="mt-5 grid gap-5 md:grid-cols-2">
             <div className="md:col-span-2">
@@ -684,7 +685,7 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
         <article id="visit-vitals" className="medical-card scroll-mt-24 rounded-[2rem] p-6">
           <h4 className="text-xl font-semibold text-slate-900">Step 2: Record vital signs</h4>
           <p className="mt-2 text-sm text-slate-600">
-            Vitals can be entered by nurses and reviewed by doctors before diagnosis and treatment.
+            Vitals can be entered by nurses and reviewed by clinicians before diagnosis and treatment.
           </p>
           <div className="mt-5 grid gap-5 md:grid-cols-2">
             {[
@@ -882,7 +883,7 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
           <div>
             <h4 className="text-xl font-semibold text-slate-900">Step 5: Lab tests and results</h4>
             <p className="mt-2 text-sm text-slate-600">
-              Request the tests needed for this visit. Lab staff upload results here for the doctor to review.
+              Request the tests needed for this visit. Lab staff upload results here for the clinician to review.
             </p>
           </div>
           {canEditEncounter && (
@@ -1043,7 +1044,7 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
             <div className="medical-badge">Step 6</div>
             <h4 className="mt-3 text-xl font-semibold text-slate-900">Finish the visit safely</h4>
             <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
-              Save the consultation first. When the doctor is done, finish the visit so the chart history is complete
+              Save the consultation first. When the clinician is done, finish the visit so the chart history is complete
               and the patient can move to pharmacy, lab, billing, admission, or follow-up.
             </p>
           </div>

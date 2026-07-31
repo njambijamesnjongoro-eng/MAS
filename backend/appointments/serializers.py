@@ -116,7 +116,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
     def validate_doctor(self, value: User):
         if not validate_appointment_doctor(value):
-            raise serializers.ValidationError("Selected user is not configured as a doctor.")
+            raise serializers.ValidationError("Selected user is not configured as a clinician.")
         return value
 
     def validate_phone_number(self, value):

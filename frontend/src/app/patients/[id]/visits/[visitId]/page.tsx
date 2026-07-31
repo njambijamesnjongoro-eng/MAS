@@ -10,7 +10,7 @@ export default async function VisitDetailPage({ params }: PageProps) {
 
   return (
     <AppShell
-      title="Doctor Visit Workspace"
+      title="Clinician Visit Workspace"
       description="Review and update this visit step by step: symptoms, vitals, diagnosis, prescriptions, tests, results, and closure."
     >
       <VisitWorkspace patientId={id} visitId={visitId} />

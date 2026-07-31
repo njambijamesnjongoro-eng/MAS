@@ -78,7 +78,7 @@ export default async function PrescriptionReceiptPage({ params }: PageProps) {
             <div className="mt-1 font-semibold">{visit.visit_id}</div>
           </div>
           <div>
-            <div className="text-slate-500">Doctor</div>
+            <div className="text-slate-500">Clinician / Doctor</div>
             <div className="mt-1 font-semibold">{visit.doctor_name}</div>
           </div>
           <div>
@@ -141,7 +141,7 @@ export default async function PrescriptionReceiptPage({ params }: PageProps) {
         </div>
 
         <div className="mt-10 grid gap-8 text-sm sm:grid-cols-2">
-          <div className="border-t border-slate-300 pt-3">Doctor signature</div>
+          <div className="border-t border-slate-300 pt-3">Clinician signature</div>
           <div className="border-t border-slate-300 pt-3">Pharmacy confirmation</div>
         </div>
       </section>

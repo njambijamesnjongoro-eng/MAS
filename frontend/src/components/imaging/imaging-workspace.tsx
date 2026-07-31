@@ -4,6 +4,7 @@ import { useDeferredValue, useEffect, useMemo, useState } from "react";
 
 import { apiRequest } from "@/lib/client-api";
 import { formatDateTime, formatStatusLabel } from "@/lib/format";
+import { canCreateImagingRequestRole } from "@/lib/role-access";
 import type {
   AuthUser,
   ImagingRequestRecord,
@@ -58,7 +59,7 @@ export function ImagingWorkspace() {
   const deferredPatientSearch = useDeferredValue(patientSearch);
 
   const canCreateRequest = useMemo(
-    () => (user ? ["doctor", "hospital_admin", "super_admin"].includes(user.effective_role) : false),
+    () => canCreateImagingRequestRole(user?.effective_role),
     [user],
   );
   const canUploadResults = useMemo(

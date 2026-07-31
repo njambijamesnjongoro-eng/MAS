@@ -10,7 +10,7 @@ export default async function NewVisitPage({ params }: PageProps) {
 
   return (
     <AppShell
-      title="Start Doctor Visit"
+      title="Start Clinician Visit"
       description="Follow the consultation steps: complaint, vitals, diagnosis, treatment plan, medicines, lab requests, and follow-up."
     >
       <VisitWorkspace patientId={id} />

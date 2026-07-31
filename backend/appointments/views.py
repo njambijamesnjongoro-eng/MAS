@@ -63,7 +63,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         role_code = get_role_code(self.request.user)
         if role_code == RoleCode.PATIENT:
             queryset = queryset.filter(patient__linked_user=self.request.user)
-        elif role_code == RoleCode.DOCTOR:
+        elif role_code in {RoleCode.CLINICAL_OFFICER, RoleCode.DOCTOR}:
             queryset = queryset.filter(doctor=self.request.user)
         return queryset
 
@@ -284,7 +284,7 @@ class AppointmentReferenceDataAPIView(APIView):
     def get(self, request):
         doctors = (
             User.objects.select_related("role")
-            .filter(role__code=RoleCode.DOCTOR, is_active=True)
+            .filter(role__code__in=[RoleCode.CLINICAL_OFFICER, RoleCode.DOCTOR], is_active=True)
             .order_by("first_name", "last_name", "username")
         )
         return Response(

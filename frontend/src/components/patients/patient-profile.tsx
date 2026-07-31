@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { apiRequest } from "@/lib/client-api";
 import { formatDate, formatRoleLabel } from "@/lib/format";
+import { canStartEncounterRole } from "@/lib/role-access";
 import type { AuthUser, PatientDetail } from "@/types";
 
 import { PatientClinicalPanel } from "@/components/clinical/patient-clinical-panel";
@@ -52,7 +53,7 @@ export function PatientProfile({ patientId }: { patientId: string }) {
   }, [user]);
 
   const canStartEncounter = useMemo(() => {
-    return user ? ["doctor", "hospital_admin", "super_admin"].includes(user.effective_role) : false;
+    return canStartEncounterRole(user?.effective_role);
   }, [user]);
 
   if (loading) {
@@ -204,7 +205,7 @@ export function PatientProfile({ patientId }: { patientId: string }) {
             <div className="medical-badge">Check 3</div>
             <h4 className="mt-3 font-semibold text-slate-900">Continue care</h4>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Use the visit workflow below to start or continue the doctor consultation, vitals, diagnosis, medicines,
+              Use the visit workflow below to start or continue the clinician consultation, vitals, diagnosis, medicines,
               labs, and follow-up.
             </p>
           </div>

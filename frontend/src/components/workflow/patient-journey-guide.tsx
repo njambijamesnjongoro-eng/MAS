@@ -56,24 +56,24 @@ export function PatientJourneyGuide({
     {
       number: 2,
       title: "Open chart and triage",
-      owner: "Nurse",
-      description: "Confirm identity, check alerts, record vitals, and prepare the patient for the doctor.",
+      owner: "Clinical officer / Nurse",
+      description: "Confirm identity, check alerts, record vitals, and prepare the patient for the clinician.",
       actions: patientId ? [{ href: patientChartHref, label: "Open chart", variant: "ghost" }] : undefined,
     },
     {
       number: 3,
-      title: "Doctor consultation",
-      owner: "Doctor",
+      title: "Clinical consultation",
+      owner: "Clinical officer / Doctor",
       description: "Record the main complaint, symptoms, examination notes, diagnosis, and care plan.",
       actions:
         patientId && canStartEncounter
-          ? [{ href: visitHref, label: "Start doctor visit", variant: "primary" }]
+          ? [{ href: visitHref, label: "Start clinician visit", variant: "primary" }]
           : undefined,
     },
     {
       number: 4,
       title: "Orders and treatment",
-      owner: "Doctor / Lab / Imaging",
+      owner: "Clinician / Lab / Imaging",
       description: "Request labs or imaging, prescribe medicines, and wait for results if needed.",
       actions: [{ href: "/imaging", label: "Imaging", variant: "ghost" }],
     },
@@ -90,7 +90,7 @@ export function PatientJourneyGuide({
     {
       number: 6,
       title: "Finish and follow up",
-      owner: "Doctor / Front desk",
+      owner: "Clinician / Front desk",
       description: "Close the visit, document follow-up date, and give the patient clear next instructions.",
       actions: [{ href: "/appointments", label: "Book follow-up", variant: "ghost" }],
     },

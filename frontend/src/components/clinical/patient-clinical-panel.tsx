@@ -74,7 +74,7 @@ export function PatientClinicalPanel({ patientId, canStartEncounter }: PatientCl
           <div>
             <h3 className="text-xl font-semibold text-slate-900">What to do next for this patient</h3>
             <p className="mt-2 text-sm text-slate-600">
-              Start a doctor visit, resume the active visit, or review the full patient history before making decisions.
+              Start a clinician visit, resume the active visit, or review the full patient history before making decisions.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -85,7 +85,7 @@ export function PatientClinicalPanel({ patientId, canStartEncounter }: PatientCl
             )}
             {canStartEncounter && (
               <Link href={`/patients/${patientId}/visits/new`} className="medical-button medical-button-primary">
-                Start doctor visit
+                Start clinician visit
               </Link>
             )}
           </div>
@@ -94,7 +94,7 @@ export function PatientClinicalPanel({ patientId, canStartEncounter }: PatientCl
 
       <section className="grid gap-6 xl:grid-cols-[1fr_1.2fr]">
         <article className="medical-card rounded-[2rem] p-6">
-          <h3 className="text-xl font-semibold text-slate-900">Previous doctor visits</h3>
+          <h3 className="text-xl font-semibold text-slate-900">Previous clinician visits</h3>
           <div className="mt-5 space-y-3">
             {visits.length === 0 ? (
               <div className="rounded-2xl bg-slate-50 px-4 py-5 text-sm text-slate-600">

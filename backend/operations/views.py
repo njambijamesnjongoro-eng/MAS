@@ -164,7 +164,14 @@ class OperationsDashboardSummaryAPIView(APIView):
     throttle_scope = "operations_read"
 
     def get(self, request):
-        if get_role_code(request.user) not in {RoleCode.SUPER_ADMIN, RoleCode.HOSPITAL_ADMIN, RoleCode.DOCTOR, RoleCode.NURSE, RoleCode.RECEPTIONIST}:
+        if get_role_code(request.user) not in {
+            RoleCode.SUPER_ADMIN,
+            RoleCode.HOSPITAL_ADMIN,
+            RoleCode.CLINICAL_OFFICER,
+            RoleCode.DOCTOR,
+            RoleCode.NURSE,
+            RoleCode.RECEPTIONIST,
+        }:
             self.permission_denied(request)
         summary = build_operations_dashboard_summary()
         pending_invoices = Invoice.objects.exclude(status=Invoice.Status.PAID).select_related("patient").order_by("-created_at")[:5]

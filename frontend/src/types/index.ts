@@ -1,6 +1,7 @@
 export type RoleCode =
   | "super_admin"
   | "hospital_admin"
+  | "clinical_officer"
   | "doctor"
   | "nurse"
   | "lab_technician"

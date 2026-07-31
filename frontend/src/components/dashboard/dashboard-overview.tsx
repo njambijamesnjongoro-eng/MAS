@@ -13,6 +13,7 @@ import { PatientJourneyGuide } from "@/components/workflow/patient-journey-guide
 import { clearCachedAuthUser, getCachedAuthUser, setCachedAuthUser } from "@/lib/auth-user-cache";
 import { apiRequest } from "@/lib/client-api";
 import { formatCurrency, formatDate, formatDateTime, formatRoleLabel, formatStatusLabel } from "@/lib/format";
+import { canStartEncounterRole } from "@/lib/role-access";
 import type {
   AuthUser,
   ClinicalDashboardSummary,
@@ -22,19 +23,21 @@ import type {
 } from "@/types";
 
 const operationalRoles = new Set<RoleCode>(["super_admin", "hospital_admin", "receptionist"]);
-const patientRegistrationRoles = new Set<RoleCode>(["super_admin", "hospital_admin", "nurse", "receptionist"]);
+const patientRegistrationRoles = new Set<RoleCode>(["super_admin", "hospital_admin", "clinical_officer", "nurse", "receptionist"]);
 const appointmentWorkflowRoles = new Set<RoleCode>([
   "super_admin",
   "hospital_admin",
+  "clinical_officer",
   "doctor",
   "nurse",
   "receptionist",
 ]);
-const admissionWorkflowRoles = new Set<RoleCode>(["super_admin", "hospital_admin", "doctor", "nurse", "receptionist"]);
+const admissionWorkflowRoles = new Set<RoleCode>(["super_admin", "hospital_admin", "clinical_officer", "doctor", "nurse", "receptionist"]);
 const billingWorkflowRoles = new Set<RoleCode>(["super_admin", "hospital_admin", "receptionist", "pharmacist"]);
 const imagingWorkflowRoles = new Set<RoleCode>([
   "super_admin",
   "hospital_admin",
+  "clinical_officer",
   "doctor",
   "nurse",
   "lab_technician",
@@ -89,12 +92,12 @@ const hospitalFlowSteps = [
   {
     label: "Triage",
     title: "Nurse checks vitals",
-    helper: "Vitals, allergies, urgency, and safety alerts are reviewed before the doctor sees the patient.",
+    helper: "Vitals, allergies, urgency, and safety alerts are reviewed before the clinician sees the patient.",
   },
   {
     label: "Consultation",
-    title: "Doctor records visit",
-    helper: "The doctor documents symptoms, diagnosis, treatment plan, medicine, labs, imaging, and follow-up.",
+    title: "Clinician records visit",
+    helper: "The clinical officer or doctor documents symptoms, diagnosis, treatment plan, medicine, labs, imaging, and follow-up.",
   },
   {
     label: "Orders",
@@ -257,7 +260,7 @@ function DashboardScrollSections({ isOperationalDashboard }: { isOperationalDash
       <article className="medical-card rounded-[2rem] p-6">
         <div className="medical-badge">Shift checklist</div>
         <h3 className="mt-3 text-xl font-semibold text-medical-primary">
-          {isOperationalDashboard ? "Admin handover checks" : "Doctor shift checks"}
+          {isOperationalDashboard ? "Admin handover checks" : "Clinician shift checks"}
         </h3>
         <p className="mt-2 text-sm leading-7 text-medical-secondary">
           Use this as a simple reminder before handing patients to the next staff member or department.
@@ -314,7 +317,7 @@ const lowResourceGuides = [
   },
   {
     title: "Power or network interruption",
-    helper: "Doctor visit notes are kept as a local draft until they are saved. Staff should still save before leaving the patient.",
+    helper: "Clinical visit notes are kept as a local draft until they are saved. Staff should still save before leaving the patient.",
   },
   {
     title: "Cash, M-Pesa, card, or insurance",
@@ -325,6 +328,78 @@ const lowResourceGuides = [
     helper: "Print the patient health ID, bill receipt, payment receipt, and prescription when the hospital needs a paper trail.",
   },
 ];
+
+const staffPlaybook = [
+  {
+    role: "Clinical officer",
+    work: "First clinical contact, quick assessment, simple diagnosis, medicines, labs, referrals, and doctor handoff.",
+    href: "/patients",
+  },
+  {
+    role: "Nurse",
+    work: "Triage, vitals, allergies, chronic conditions, ward care notes, and patient preparation before consultation.",
+    href: "/patients",
+  },
+  {
+    role: "Doctor",
+    work: "Complex consultation, diagnosis confirmation, treatment plan, admissions, follow-up, and high-risk decisions.",
+    href: "/patients",
+  },
+  {
+    role: "Lab / imaging",
+    work: "Receive requests, upload results, attach files, and return findings to the patient timeline.",
+    href: "/imaging",
+  },
+  {
+    role: "Pharmacy",
+    work: "View prescriptions, dispense medicines, confirm medicine receipts, and support stock/billing handoff.",
+    href: "/patients",
+  },
+  {
+    role: "Front desk / billing",
+    work: "Register arrivals, book follow-ups, prepare invoices, record cash/M-Pesa/card/insurance payments, and print receipts.",
+    href: "/billing",
+  },
+  {
+    role: "Wards",
+    work: "Admit patients, assign beds, transfer wards, discharge patients, and keep bed status current.",
+    href: "/admissions",
+  },
+  {
+    role: "Hospital admin",
+    work: "Monitor admissions, revenue, reports, user access, queues, notifications, and overall hospital operations.",
+    href: "/reports",
+  },
+];
+
+function StaffPlaybookPanel() {
+  return (
+    <section className="medical-card rounded-[2rem] p-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <div className="medical-badge">Staff workflow map</div>
+          <h3 className="mt-3 text-xl font-semibold text-medical-primary">One system for every hospital desk</h3>
+          <p className="mt-2 max-w-4xl text-sm leading-7 text-medical-secondary">
+            Each role sees the same patient journey, but uses the parts of the system that match their work. This keeps
+            handoffs clear from entrance to discharge, payment, pharmacy, and follow-up.
+          </p>
+        </div>
+        <Link href="/patients" className="medical-button medical-button-primary whitespace-nowrap">
+          Start at patient list
+        </Link>
+      </div>
+
+      <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {staffPlaybook.map((item) => (
+          <Link key={item.role} href={item.href} className="medical-subtle-panel medical-card-interactive rounded-[1.4rem] p-4">
+            <h4 className="font-semibold text-medical-primary">{item.role}</h4>
+            <p className="mt-2 text-sm leading-6 text-medical-secondary">{item.work}</p>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 function LowResourceReadinessPanel({ isOperationalDashboard }: { isOperationalDashboard: boolean }) {
   return (
@@ -616,7 +691,7 @@ export function DashboardOverview() {
 
   return (
     <div className="space-y-6 pb-10">
-      <PatientJourneyGuide activeStep={1} canStartEncounter={user.effective_role === "doctor"} />
+      <PatientJourneyGuide activeStep={1} canStartEncounter={canStartEncounterRole(user.effective_role)} />
 
       <StartCarePanel role={user.effective_role} isOperationalDashboard={isOperationalDashboard} />
 
@@ -657,7 +732,7 @@ export function DashboardOverview() {
 
       <section className="grid min-w-0 gap-6 xl:grid-cols-[1.55fr_1fr]">
         <InsightList
-          title={isOperationalDashboard ? "What needs action now" : "Doctor worklist"}
+          title={isOperationalDashboard ? "What needs action now" : "Clinician worklist"}
           subtitle={
             isOperationalDashboard
               ? "Admissions, bed occupancy, and finance queues prepared for fast administrative decisions."
@@ -833,6 +908,8 @@ export function DashboardOverview() {
       </section>
 
       <DashboardScrollSections isOperationalDashboard={isOperationalDashboard} />
+
+      <StaffPlaybookPanel />
 
       <LowResourceReadinessPanel isOperationalDashboard={isOperationalDashboard} />
     </div>

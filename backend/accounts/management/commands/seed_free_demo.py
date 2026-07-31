@@ -17,6 +17,7 @@ class Command(BaseCommand):
 
         aliases = [
             ("admin", "admin.demo@example.com", RoleCode.HOSPITAL_ADMIN, "Martha", "Njeri"),
+            ("clinical", "clinical.demo@example.com", RoleCode.CLINICAL_OFFICER, "Amina", "Wanjiru"),
             ("doctor", "doctor.demo@example.com", RoleCode.DOCTOR, "Brian", "Odhiambo"),
             ("labtech", "labtech.demo@example.com", RoleCode.LAB_TECHNICIAN, "Janet", "Mutheu"),
             ("reception", "reception.demo@example.com", RoleCode.RECEPTIONIST, "Kevin", "Kariuki"),

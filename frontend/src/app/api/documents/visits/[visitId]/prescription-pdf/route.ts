@@ -41,7 +41,7 @@ export async function GET(_request: Request, context: Context) {
       ["Patient", `${patient.first_name} ${patient.last_name}`],
       ["Health ID", patient.health_id],
       ["Visit", visit.visit_id],
-      ["Doctor", visit.doctor_name],
+      ["Clinician / Doctor", visit.doctor_name],
       ["Visit date", formatDateTime(visit.visit_date)],
       ["Generated", formatDateTime(new Date().toISOString())],
     ],
@@ -82,7 +82,7 @@ export async function GET(_request: Request, context: Context) {
           : ["No pharmacy instructions recorded."],
       },
     ],
-    signatures: ["Doctor signature", "Pharmacy confirmation"],
+    signatures: ["Clinician signature", "Pharmacy confirmation"],
   });
 
   return pdfResponse(buffer, `prescription-${visit.visit_id}.pdf`);
