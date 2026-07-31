@@ -58,6 +58,9 @@ export default async function PaymentReceiptPage({ params }: PageProps) {
             <Link href="/billing" className="medical-button medical-button-secondary">
               Back to billing
             </Link>
+            <a href={`/api/documents/payments/${paymentId}/receipt-pdf`} className="medical-button medical-button-secondary">
+              Download PDF
+            </a>
             <PrintButton label="Print payment receipt" />
           </div>
         </div>

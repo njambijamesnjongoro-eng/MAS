@@ -335,6 +335,12 @@ export function BillingWorkspace() {
                       >
                         Print hospital bill
                       </Link>
+                      <a
+                        href={`/api/documents/invoices/${invoice.id}/receipt-pdf`}
+                        className="medical-button medical-button-primary"
+                      >
+                        Download bill PDF
+                      </a>
                     </div>
                     <div className="mt-2 text-sm text-slate-600">{invoice.patient_name}</div>
                     <div className="mt-3 grid gap-2 text-sm text-slate-600 md:grid-cols-3">
@@ -425,6 +431,12 @@ export function BillingWorkspace() {
                           >
                             Print payment receipt
                           </Link>
+                          <a
+                            href={`/api/documents/payments/${payment.id}/receipt-pdf`}
+                            className="medical-button medical-button-secondary mb-3 ml-2 inline-flex"
+                          >
+                            Download PDF
+                          </a>
                           <br />
                           {formatCurrency(payment.amount_paid)} via {formatStatusLabel(payment.payment_method)} • {formatDateTime(payment.payment_date)}
                           {payment.transaction_reference ? ` • Ref ${payment.transaction_reference}` : ""}

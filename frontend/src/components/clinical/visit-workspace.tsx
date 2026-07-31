@@ -658,12 +658,17 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
             </div>
             <div className="flex flex-wrap gap-3">
               {visitId && hasSavedPrescriptions && (
-                <Link
-                  href={`/patients/${patientId}/visits/${visitId}/prescription`}
-                  className="medical-button medical-button-primary"
-                >
-                  Print medicine slip
-                </Link>
+                <>
+                  <Link
+                    href={`/patients/${patientId}/visits/${visitId}/prescription`}
+                    className="medical-button medical-button-primary"
+                  >
+                    Print medicine slip
+                  </Link>
+                  <a href={`/api/documents/visits/${visitId}/prescription-pdf`} className="medical-button medical-button-secondary">
+                    Download medicine PDF
+                  </a>
+                </>
               )}
               {canEditEncounter && (
                 <button

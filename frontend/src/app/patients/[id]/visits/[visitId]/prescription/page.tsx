@@ -57,6 +57,9 @@ export default async function PrescriptionReceiptPage({ params }: PageProps) {
             <Link href={`/patients/${id}/visits/${visitId}`} className="medical-button medical-button-secondary">
               Back to visit
             </Link>
+            <a href={`/api/documents/visits/${visitId}/prescription-pdf`} className="medical-button medical-button-secondary">
+              Download PDF
+            </a>
             <PrintButton label="Print medicine slip" />
           </div>
         </div>
