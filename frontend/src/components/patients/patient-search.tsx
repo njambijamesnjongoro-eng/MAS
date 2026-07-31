@@ -1,25 +1,31 @@
 "use client";
 
 import Link from "next/link";
-import { useDeferredValue, useEffect, useState } from "react";
+import { useDeferredValue, useEffect, useRef, useState } from "react";
 
-import { PatientJourneyGuide } from "@/components/workflow/patient-journey-guide";
 import { apiRequest } from "@/lib/client-api";
 import { formatDate } from "@/lib/format";
 import type { PaginatedResponse, PatientSummary } from "@/types";
+
+const PATIENT_PAGE_SIZE = 100;
 
 function EmptyState({ message }: { message: string }) {
   return <div className="medical-empty-state rounded-2xl px-4 py-5 text-sm">{message}</div>;
 }
 
-export function PatientSearch() {
+type PatientSearchProps = {
+  initialData?: PaginatedResponse<PatientSummary> | null;
+};
+
+export function PatientSearch({ initialData = null }: PatientSearchProps) {
   const [search, setSearch] = useState("");
   const [gender, setGender] = useState("");
   const [bloodGroup, setBloodGroup] = useState("");
   const [page, setPage] = useState(1);
-  const [data, setData] = useState<PaginatedResponse<PatientSummary> | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<PaginatedResponse<PatientSummary> | null>(initialData);
+  const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState<string | null>(null);
+  const usedInitialData = useRef(Boolean(initialData));
   const deferredSearch = useDeferredValue(search);
   const hasActiveFilters = Boolean(deferredSearch.trim() || gender || bloodGroup);
   const emptyMessage = hasActiveFilters
@@ -39,6 +45,15 @@ export function PatientSearch() {
 
   useEffect(() => {
     let cancelled = false;
+    const isInitialRegistryView = !hasActiveFilters && page === 1;
+
+    if (usedInitialData.current && isInitialRegistryView) {
+      usedInitialData.current = false;
+      setLoading(false);
+      return () => {
+        cancelled = true;
+      };
+    }
 
     async function loadPatients() {
       setLoading(true);
@@ -55,7 +70,7 @@ export function PatientSearch() {
         params.set("blood_group", bloodGroup);
       }
       params.set("page", String(page));
-      params.set("page_size", "25");
+      params.set("page_size", String(PATIENT_PAGE_SIZE));
 
       try {
         const { data: payload } = await apiRequest<PaginatedResponse<PatientSummary>>(
@@ -79,20 +94,16 @@ export function PatientSearch() {
     return () => {
       cancelled = true;
     };
-  }, [deferredSearch, gender, bloodGroup, page]);
+  }, [deferredSearch, gender, bloodGroup, hasActiveFilters, page]);
 
   return (
-    <div className="space-y-6">
-      <PatientJourneyGuide activeStep={1} compact />
-
-      <section className="medical-card medical-hero rounded-[2rem] p-6">
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+    <div className="space-y-4">
+      <section className="medical-card rounded-[2rem] p-5">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div>
-            <div className="medical-badge">Step 1 - Find the patient</div>
-            <h3 className="mt-3 text-2xl font-semibold text-medical-primary">Find patient and open chart</h3>
-            <p className="mt-2 max-w-2xl text-sm leading-7 text-medical-secondary">
-              When you click Find Patient, the full registered patient list appears first. Type a name, health ID, ID
-              number, or phone number only when you need to narrow it down.
+            <h3 className="text-2xl font-semibold text-medical-primary">All registered patients</h3>
+            <p className="mt-2 text-sm text-medical-secondary">
+              The registry loads first. Search only when you need to narrow the list.
             </p>
           </div>
 
@@ -101,7 +112,7 @@ export function PatientSearch() {
           </Link>
         </div>
 
-        <div className="mt-6 grid gap-4 lg:grid-cols-[2fr_1fr_1fr]">
+        <div className="mt-5 grid gap-3 lg:grid-cols-[2fr_1fr_1fr]">
           <input
             className="medical-input"
             placeholder="Type patient name, health ID, ID number, or phone"
@@ -146,7 +157,7 @@ export function PatientSearch() {
           <span>
             {hasActiveFilters
               ? "Showing filtered patients. Clear filters to return to the full registry."
-              : "Showing the full patient registry, newest registrations first."}
+              : `Showing up to ${PATIENT_PAGE_SIZE} patients at once, newest registrations first.`}
           </span>
           {hasActiveFilters && (
             <button type="button" onClick={clearFilters} className="medical-button medical-button-secondary">
@@ -159,14 +170,17 @@ export function PatientSearch() {
       {error && <div className="rounded-[2rem] bg-red-50 px-5 py-4 text-sm text-red-700">{error}</div>}
 
       <section className="medical-card rounded-[2rem] p-6">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="text-xl font-semibold text-medical-primary">{directoryTitle}</h3>
             <p className="mt-2 text-sm text-medical-secondary">
               Choose the correct patient, then open the chart to review alerts, visits, labs, medicines, and next steps.
             </p>
           </div>
-          {data && <div className="medical-badge">{directoryBadge}</div>}
+          <div className="flex flex-wrap gap-2">
+            {data && <div className="medical-badge">{directoryBadge}</div>}
+            {data && data.num_pages > 1 && <div className="medical-badge">{data.results.length} shown on this page</div>}
+          </div>
         </div>
 
         <div className="mt-5 space-y-3 md:hidden">
