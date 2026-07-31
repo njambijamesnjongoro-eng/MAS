@@ -61,7 +61,7 @@ export function PatientClinicalPanel({ patientId, canStartEncounter }: PatientCl
   }
 
   return (
-    <div className="space-y-6">
+    <div id="clinical-workflow" className="scroll-mt-24 space-y-6">
       <PatientJourneyGuide
         activeStep={activeJourneyStep}
         canStartEncounter={canStartEncounter}

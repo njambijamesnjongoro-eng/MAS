@@ -89,6 +89,15 @@ const defaultFormState: VisitFormState = {
   lab_requests: [emptyLabRequest()],
 };
 
+const consultationSteps = [
+  { href: "#visit-story", label: "1. Patient story" },
+  { href: "#visit-vitals", label: "2. Vitals" },
+  { href: "#visit-diagnosis", label: "3. Diagnosis" },
+  { href: "#visit-medicines", label: "4. Medicines" },
+  { href: "#visit-labs", label: "5. Labs" },
+  { href: "#finish-visit", label: "6. Finish" },
+];
+
 function toLocalDateTime(value?: string) {
   if (!value) {
     return new Date().toISOString().slice(0, 16);
@@ -446,8 +455,26 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
 
       <PatientJourneyGuide activeStep={visitJourneyStep} canStartEncounter={canEditEncounter} compact patientId={patientId} />
 
+      <section className="medical-card rounded-[2rem] p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h4 className="text-base font-semibold text-slate-900">Consultation steps</h4>
+            <p className="mt-1 text-sm text-slate-600">
+              Move through the visit from history taking to orders, then save and finish.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {consultationSteps.map((step) => (
+              <a key={step.href} href={step.href} className="medical-button medical-button-ghost">
+                {step.label}
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <article className="medical-card rounded-[2rem] p-6">
+        <article id="visit-story" className="medical-card scroll-mt-24 rounded-[2rem] p-6">
           <h4 className="text-xl font-semibold text-slate-900">Step 1: Ask what brought the patient in</h4>
           <p className="mt-2 text-sm text-slate-600">
             Capture the patient story first. This is the main consultation note doctors will return to later.
@@ -525,7 +552,7 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
           </div>
         </article>
 
-        <article className="medical-card rounded-[2rem] p-6">
+        <article id="visit-vitals" className="medical-card scroll-mt-24 rounded-[2rem] p-6">
           <h4 className="text-xl font-semibold text-slate-900">Step 2: Record vital signs</h4>
           <p className="mt-2 text-sm text-slate-600">
             Vitals can be entered by nurses and reviewed by doctors before diagnosis and treatment.
@@ -561,7 +588,7 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-        <article className="medical-card rounded-[2rem] p-6">
+        <article id="visit-diagnosis" className="medical-card scroll-mt-24 rounded-[2rem] p-6">
           <h4 className="text-xl font-semibold text-slate-900">Step 3: Diagnosis</h4>
           <p className="mt-2 text-sm text-slate-600">
             Record the clinical decision clearly enough that another clinician can safely continue care.
@@ -622,7 +649,7 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
           </div>
         </article>
 
-        <article className="medical-card rounded-[2rem] p-6">
+        <article id="visit-medicines" className="medical-card scroll-mt-24 rounded-[2rem] p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
               <h4 className="text-xl font-semibold text-slate-900">Step 4: Medicines to give</h4>
@@ -706,7 +733,7 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
         </article>
       </section>
 
-      <section className="medical-card rounded-[2rem] p-6">
+      <section id="visit-labs" className="medical-card scroll-mt-24 rounded-[2rem] p-6">
         <div className="flex items-center justify-between gap-4">
           <div>
             <h4 className="text-xl font-semibold text-slate-900">Step 5: Lab tests and results</h4>
@@ -863,6 +890,34 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
               )}
             </div>
           ))}
+        </div>
+      </section>
+
+      <section id="finish-visit" className="medical-card scroll-mt-24 rounded-[2rem] p-6">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div className="medical-badge">Step 6</div>
+            <h4 className="mt-3 text-xl font-semibold text-slate-900">Finish the visit safely</h4>
+            <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
+              Save the consultation first. When the doctor is done, finish the visit so the chart history is complete
+              and the patient can move to pharmacy, lab, billing, admission, or follow-up.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link href={`/patients/${patientId}`} className="medical-button medical-button-secondary">
+              Back to chart
+            </Link>
+            {canEditEncounter && (
+              <button type="button" onClick={saveVisit} disabled={saving} className="medical-button medical-button-primary">
+                {saving ? "Saving..." : "Save consultation"}
+              </button>
+            )}
+            {visitId && canEditEncounter && form.status !== "closed" && (
+              <button type="button" onClick={closeCurrentVisit} disabled={closingVisit} className="medical-button medical-button-secondary">
+                {closingVisit ? "Finishing..." : "Finish visit"}
+              </button>
+            )}
+          </div>
         </div>
       </section>
     </div>

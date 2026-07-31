@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { apiRequest } from "@/lib/client-api";
@@ -167,6 +168,51 @@ export function PatientProfile({ patientId }: { patientId: string }) {
         </article>
       </section>
 
+      <section className="medical-card rounded-[2rem] p-6">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div className="medical-badge">Chart workflow</div>
+            <h3 className="mt-3 text-2xl font-semibold text-slate-900">What to do next</h3>
+            <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
+              Confirm the patient identity, check safety alerts, then continue the clinical workflow. This mirrors how a
+              real hospital chart should be used before treatment decisions.
+            </p>
+          </div>
+          <Link href="#clinical-workflow" className="medical-button medical-button-primary whitespace-nowrap">
+            Go to visit workflow
+          </Link>
+        </div>
+
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
+          <div className="medical-subtle-panel rounded-[1.4rem] p-4">
+            <div className="medical-badge">Check 1</div>
+            <h4 className="mt-3 font-semibold text-slate-900">Confirm identity</h4>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              {patient.health_id} - National ID {patient.national_id || "not recorded"} - DOB{" "}
+              {formatDate(patient.date_of_birth)}
+            </p>
+          </div>
+          <div className="medical-subtle-panel rounded-[1.4rem] p-4">
+            <div className="medical-badge">Check 2</div>
+            <h4 className="mt-3 font-semibold text-slate-900">Read safety alerts</h4>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Allergies: {patient.allergies || "none recorded"}. Chronic conditions:{" "}
+              {patient.chronic_conditions || "none recorded"}.
+            </p>
+          </div>
+          <div className="medical-subtle-panel rounded-[1.4rem] p-4">
+            <div className="medical-badge">Check 3</div>
+            <h4 className="mt-3 font-semibold text-slate-900">Continue care</h4>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Use the visit workflow below to start or continue the doctor consultation, vitals, diagnosis, medicines,
+              labs, and follow-up.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <PatientClinicalPanel patientId={patientId} canStartEncounter={canStartEncounter} />
+
       <section className="grid gap-6 xl:grid-cols-2">
         <article className="medical-card rounded-[2rem] p-6">
           <h3 className="text-xl font-semibold text-slate-900">Safety alerts</h3>
@@ -206,8 +252,6 @@ export function PatientProfile({ patientId }: { patientId: string }) {
           </div>
         </article>
       </section>
-
-      <PatientClinicalPanel patientId={patientId} canStartEncounter={canStartEncounter} />
     </div>
   );
 }

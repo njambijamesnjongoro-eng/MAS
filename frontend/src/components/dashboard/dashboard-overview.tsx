@@ -22,6 +22,23 @@ import type {
 } from "@/types";
 
 const operationalRoles = new Set<RoleCode>(["super_admin", "hospital_admin", "receptionist"]);
+const patientRegistrationRoles = new Set<RoleCode>(["super_admin", "hospital_admin", "nurse", "receptionist"]);
+const appointmentWorkflowRoles = new Set<RoleCode>([
+  "super_admin",
+  "hospital_admin",
+  "doctor",
+  "nurse",
+  "receptionist",
+]);
+const admissionWorkflowRoles = new Set<RoleCode>(["super_admin", "hospital_admin", "doctor", "nurse", "receptionist"]);
+const billingWorkflowRoles = new Set<RoleCode>(["super_admin", "hospital_admin", "receptionist", "pharmacist"]);
+const imagingWorkflowRoles = new Set<RoleCode>([
+  "super_admin",
+  "hospital_admin",
+  "doctor",
+  "nurse",
+  "lab_technician",
+]);
 
 function isOperationalRole(role: RoleCode) {
   return operationalRoles.has(role);
@@ -61,6 +78,92 @@ function InsightList({
 
 function EmptyState({ message }: { message: string }) {
   return <div className="medical-empty-state rounded-2xl px-4 py-5 text-sm">{message}</div>;
+}
+
+function StartCarePanel({ role, isOperationalDashboard }: { role: RoleCode; isOperationalDashboard: boolean }) {
+  const actions = [
+    {
+      href: "/patients",
+      label: "Find patient",
+      helper: "Open the patient chart first. This is the safest starting point for care.",
+      tone: "medical-button-primary",
+    },
+  ];
+
+  if (patientRegistrationRoles.has(role)) {
+    actions.push({
+      href: "/patients/register",
+      label: "Register new arrival",
+      helper: "Use this only when the patient is not already in the hospital registry.",
+      tone: "medical-button-secondary",
+    });
+  }
+
+  if (appointmentWorkflowRoles.has(role)) {
+    actions.push({
+      href: "/appointments",
+      label: "Today appointments",
+      helper: "Check who is expected, confirmed, completed, cancelled, or missed.",
+      tone: "medical-button-secondary",
+    });
+  }
+
+  if (isOperationalDashboard && admissionWorkflowRoles.has(role)) {
+    actions.push({
+      href: "/admissions",
+      label: "Wards and beds",
+      helper: "Admit, transfer, or discharge inpatients after the clinical decision.",
+      tone: "medical-button-secondary",
+    });
+  }
+
+  if (isOperationalDashboard && billingWorkflowRoles.has(role)) {
+    actions.push({
+      href: "/billing",
+      label: "Bills and payments",
+      helper: "Prepare invoices, record payments, and check outstanding balances.",
+      tone: "medical-button-secondary",
+    });
+  }
+
+  if (!isOperationalDashboard && imagingWorkflowRoles.has(role)) {
+    actions.push({
+      href: "/imaging",
+      label: "Lab/X-Ray follow-up",
+      helper: "Review requested investigations and results that affect today care.",
+      tone: "medical-button-secondary",
+    });
+  }
+
+  return (
+    <section className="medical-card medical-hero rounded-[2rem] p-6">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <div className="medical-badge">Start here</div>
+          <h3 className="mt-3 text-2xl font-semibold text-medical-primary">Patient care in the right order</h3>
+          <p className="mt-2 max-w-3xl text-sm leading-7 text-medical-secondary">
+            Use this row during a shift: find the patient, open the chart, then continue to the next hospital step. It
+            keeps the workflow simple and avoids jumping into the wrong module.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {actions.map((action, index) => (
+          <Link
+            key={action.href}
+            href={action.href}
+            className="medical-subtle-panel medical-card-interactive rounded-[1.4rem] p-4"
+          >
+            <div className="medical-badge">Step {index + 1}</div>
+            <h4 className="mt-3 text-base font-semibold text-medical-primary">{action.label}</h4>
+            <p className="mt-2 min-h-12 text-sm leading-6 text-medical-secondary">{action.helper}</p>
+            <span className={`medical-button ${action.tone} mt-4 inline-flex`}>Open</span>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 export function DashboardOverview() {
@@ -320,6 +423,8 @@ export function DashboardOverview() {
   return (
     <div className="space-y-6">
       <PatientJourneyGuide activeStep={1} canStartEncounter={user.effective_role === "doctor"} />
+
+      <StartCarePanel role={user.effective_role} isOperationalDashboard={isOperationalDashboard} />
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {metricCards.map((card) => (
