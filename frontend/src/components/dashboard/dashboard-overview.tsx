@@ -80,6 +80,50 @@ function EmptyState({ message }: { message: string }) {
   return <div className="medical-empty-state rounded-2xl px-4 py-5 text-sm">{message}</div>;
 }
 
+const hospitalFlowSteps = [
+  {
+    label: "Arrival",
+    title: "Patient comes in",
+    helper: "Reception confirms identity, checks whether the patient is already registered, and opens the chart.",
+  },
+  {
+    label: "Triage",
+    title: "Nurse checks vitals",
+    helper: "Vitals, allergies, urgency, and safety alerts are reviewed before the doctor sees the patient.",
+  },
+  {
+    label: "Consultation",
+    title: "Doctor records visit",
+    helper: "The doctor documents symptoms, diagnosis, treatment plan, medicine, labs, imaging, and follow-up.",
+  },
+  {
+    label: "Orders",
+    title: "Labs, imaging, pharmacy",
+    helper: "Requested services move to the right department queue and return results to the patient chart.",
+  },
+  {
+    label: "Finish",
+    title: "Billing, admission, or discharge",
+    helper: "The patient is billed, admitted, discharged, or given a follow-up appointment depending on the outcome.",
+  },
+];
+
+const clinicalChecklist = [
+  "Open the patient chart before starting treatment.",
+  "Check allergies, chronic conditions, and previous visits.",
+  "Record or review vitals before diagnosis.",
+  "Save diagnosis, medicines, lab requests, and follow-up.",
+  "Finish the visit once the patient is handed to the next department.",
+];
+
+const operationsChecklist = [
+  "Check active admissions and bed pressure.",
+  "Review pending invoices and payment follow-up.",
+  "Confirm wards have available beds before admission.",
+  "Watch new lab, imaging, and pharmacy handovers.",
+  "Keep unread notifications cleared during the shift.",
+];
+
 function StartCarePanel({ role, isOperationalDashboard }: { role: RoleCode; isOperationalDashboard: boolean }) {
   const actions = [
     {
@@ -162,6 +206,103 @@ function StartCarePanel({ role, isOperationalDashboard }: { role: RoleCode; isOp
           </Link>
         ))}
       </div>
+    </section>
+  );
+}
+
+function DashboardScrollSections({ isOperationalDashboard }: { isOperationalDashboard: boolean }) {
+  const checklist = isOperationalDashboard ? operationsChecklist : clinicalChecklist;
+  const departmentLinks = isOperationalDashboard
+    ? [
+        { href: "/admissions", label: "Wards and beds", helper: "Track admissions, transfers, discharges, and available beds." },
+        { href: "/billing", label: "Bills and payments", helper: "Review invoices, partial payments, and outstanding balances." },
+        { href: "/reports", label: "Reports", helper: "Open the reporting foundation for hospital activity and revenue." },
+        { href: "/notifications", label: "Messages", helper: "Read internal alerts from lab, billing, admissions, and wards." },
+      ]
+    : [
+        { href: "/patients", label: "Patient registry", helper: "Open charts quickly and continue patient care from the record." },
+        { href: "/appointments", label: "Appointments", helper: "Review booked patients, follow-ups, cancellations, and no-shows." },
+        { href: "/imaging", label: "X-Ray and imaging", helper: "Track requests, uploaded files, reports, and result readiness." },
+        { href: "/notifications", label: "Messages", helper: "Read clinical alerts and pending work from other departments." },
+      ];
+
+  return (
+    <section className="grid gap-6 xl:grid-cols-[1.35fr_0.9fr]">
+      <article className="medical-card rounded-[2rem] p-6">
+        <div className="medical-badge">Full hospital flow</div>
+        <h3 className="mt-3 text-xl font-semibold text-medical-primary">How a patient moves through the hospital</h3>
+        <p className="mt-2 text-sm leading-7 text-medical-secondary">
+          This lower section keeps the dashboard long enough to scroll while showing the real sequence staff follow
+          from arrival to finish.
+        </p>
+
+        <div className="mt-5 grid gap-3">
+          {hospitalFlowSteps.map((step, index) => (
+            <div key={step.label} className="medical-subtle-panel rounded-[1.4rem] p-4">
+              <div className="flex flex-col gap-3 md:flex-row md:items-start">
+                <div className="medical-badge shrink-0">Step {index + 1}</div>
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-medical-muted">
+                    {step.label}
+                  </div>
+                  <h4 className="mt-1 font-semibold text-medical-primary">{step.title}</h4>
+                  <p className="mt-2 text-sm leading-6 text-medical-secondary">{step.helper}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </article>
+
+      <article className="medical-card rounded-[2rem] p-6">
+        <div className="medical-badge">Shift checklist</div>
+        <h3 className="mt-3 text-xl font-semibold text-medical-primary">
+          {isOperationalDashboard ? "Admin handover checks" : "Doctor shift checks"}
+        </h3>
+        <p className="mt-2 text-sm leading-7 text-medical-secondary">
+          Use this as a simple reminder before handing patients to the next staff member or department.
+        </p>
+
+        <div className="mt-5 space-y-3">
+          {checklist.map((item, index) => (
+            <div key={item} className="medical-subtle-panel rounded-[1.3rem] px-4 py-3">
+              <div className="flex gap-3">
+                <div className="medical-badge h-fit">{index + 1}</div>
+                <div className="text-sm leading-6 text-medical-secondary">{item}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </article>
+
+      <article className="medical-card rounded-[2rem] p-6 xl:col-span-2">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <div className="medical-badge">More work areas</div>
+            <h3 className="mt-3 text-xl font-semibold text-medical-primary">Scroll down for department queues</h3>
+            <p className="mt-2 text-sm leading-7 text-medical-secondary">
+              These shortcuts make the dashboard feel like a hospital command page, not just a short summary screen.
+            </p>
+          </div>
+          <Link href="/patients" className="medical-button medical-button-primary whitespace-nowrap">
+            Open patient registry
+          </Link>
+        </div>
+
+        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {departmentLinks.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="medical-subtle-panel medical-card-interactive rounded-[1.4rem] p-4"
+            >
+              <h4 className="font-semibold text-medical-primary">{item.label}</h4>
+              <p className="mt-2 text-sm leading-6 text-medical-secondary">{item.helper}</p>
+              <span className="medical-button medical-button-ghost mt-4 inline-flex">Open</span>
+            </Link>
+          ))}
+        </div>
+      </article>
     </section>
   );
 }
@@ -421,7 +562,7 @@ export function DashboardOverview() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-10">
       <PatientJourneyGuide activeStep={1} canStartEncounter={user.effective_role === "doctor"} />
 
       <StartCarePanel role={user.effective_role} isOperationalDashboard={isOperationalDashboard} />
@@ -637,6 +778,8 @@ export function DashboardOverview() {
           </div>
         </InsightList>
       </section>
+
+      <DashboardScrollSections isOperationalDashboard={isOperationalDashboard} />
     </div>
   );
 }
