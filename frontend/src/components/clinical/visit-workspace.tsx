@@ -229,6 +229,7 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
       form.lab_requests.some((item) => item.test_name.trim());
     return hasOrders ? 4 : 3;
   }, [form.lab_requests, form.prescriptions]);
+  const hasSavedPrescriptions = form.prescriptions.some((item) => item.id && item.medication_name.trim());
 
   function updateField<K extends keyof VisitFormState>(field: K, value: VisitFormState[K]) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -655,15 +656,25 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
               <h4 className="text-xl font-semibold text-slate-900">Step 4: Medicines to give</h4>
               <p className="mt-2 text-sm text-slate-600">Add medicines, doses, frequency, route, and instructions.</p>
             </div>
-            {canEditEncounter && (
-              <button
-                type="button"
-                onClick={() => setForm((current) => ({ ...current, prescriptions: [...current.prescriptions, emptyPrescription()] }))}
-                className="medical-button medical-button-secondary"
-              >
-                Add medicine
-              </button>
-            )}
+            <div className="flex flex-wrap gap-3">
+              {visitId && hasSavedPrescriptions && (
+                <Link
+                  href={`/patients/${patientId}/visits/${visitId}/prescription`}
+                  className="medical-button medical-button-primary"
+                >
+                  Print medicine slip
+                </Link>
+              )}
+              {canEditEncounter && (
+                <button
+                  type="button"
+                  onClick={() => setForm((current) => ({ ...current, prescriptions: [...current.prescriptions, emptyPrescription()] }))}
+                  className="medical-button medical-button-secondary"
+                >
+                  Add medicine
+                </button>
+              )}
+            </div>
           </div>
           <div className="mt-5 space-y-4">
             {form.prescriptions.map((prescription, index) => (

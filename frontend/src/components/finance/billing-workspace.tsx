@@ -1,10 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useDeferredValue, useEffect, useState } from "react";
 
 import { apiRequest } from "@/lib/client-api";
 import { formatCurrency, formatDateTime, formatStatusLabel } from "@/lib/format";
-import type { Invoice, PaginatedResponse, PatientSummary, PaymentMethod } from "@/types";
+import type { Invoice, PaginatedResponse, PatientSummary, Payment, PaymentMethod } from "@/types";
 
 import { ToastNotice } from "@/components/clinical/toast-notice";
 
@@ -181,7 +182,13 @@ export function BillingWorkspace() {
       return;
     }
 
-    setToast({ message: "Payment recorded successfully.", tone: "success" });
+    const savedPayment = payload as Payment;
+    setToast({
+      message: savedPayment.id
+        ? `Payment recorded successfully. Payment receipt PAY-${String(savedPayment.id).padStart(6, "0")} is ready.`
+        : "Payment recorded successfully.",
+      tone: "success",
+    });
     setPaymentForms((current) => ({
       ...current,
       [invoiceId]: {
@@ -322,6 +329,12 @@ export function BillingWorkspace() {
                     <div className="flex flex-wrap items-center gap-2">
                       <h4 className="text-lg font-semibold text-slate-900">{invoice.invoice_number}</h4>
                       <span className="medical-badge">{formatStatusLabel(invoice.status)}</span>
+                      <Link
+                        href={`/billing/invoices/${invoice.id}/receipt`}
+                        className="medical-button medical-button-secondary"
+                      >
+                        Print hospital bill
+                      </Link>
                     </div>
                     <div className="mt-2 text-sm text-slate-600">{invoice.patient_name}</div>
                     <div className="mt-3 grid gap-2 text-sm text-slate-600 md:grid-cols-3">
@@ -406,6 +419,13 @@ export function BillingWorkspace() {
                     {invoice.payments.length ? (
                       invoice.payments.map((payment) => (
                         <div key={payment.id} className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                          <Link
+                            href={`/billing/payments/${payment.id}/receipt`}
+                            className="medical-button medical-button-ghost mb-3 inline-flex"
+                          >
+                            Print payment receipt
+                          </Link>
+                          <br />
                           {formatCurrency(payment.amount_paid)} via {formatStatusLabel(payment.payment_method)} • {formatDateTime(payment.payment_date)}
                           {payment.transaction_reference ? ` • Ref ${payment.transaction_reference}` : ""}
                         </div>
