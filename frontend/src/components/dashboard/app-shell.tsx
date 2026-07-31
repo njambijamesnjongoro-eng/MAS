@@ -156,7 +156,7 @@ export function AppShell({ title, description, children }: AppShellProps) {
 
   return (
     <div className="min-h-screen overflow-x-hidden">
-      <div className="mx-auto flex min-h-screen max-w-[1680px] gap-6 overflow-x-hidden px-4 py-4 lg:px-6">
+      <div className="mx-auto flex min-h-screen max-w-[1680px] gap-3 overflow-x-hidden px-4 py-4 lg:px-6">
         {navOpen && (
           <button
             type="button"
@@ -222,7 +222,7 @@ export function AppShell({ title, description, children }: AppShellProps) {
           </div>
         </aside>
 
-        <main className="min-w-0 flex-1 space-y-6 overflow-x-hidden lg:pl-[21.5rem]">
+        <main className="min-w-0 flex-1 space-y-6 overflow-x-hidden">
           <section className="medical-card medical-hero overflow-hidden rounded-[2rem] px-5 py-5 lg:px-6">
             <div className="flex flex-col gap-5">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
