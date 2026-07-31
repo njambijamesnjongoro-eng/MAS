@@ -32,6 +32,8 @@ export async function GET(_request: Request, context: Context) {
 
   const patient = patientResponse.payload as PatientDetail;
   const prescriptions = visit.prescriptions.filter((item) => item.medication_name.trim());
+  const visiblePrescriptions = prescriptions.slice(0, 8);
+  const hiddenPrescriptionCount = Math.max(prescriptions.length - visiblePrescriptions.length, 0);
   const buffer = createReceiptPdf({
     title: "Medicine Prescription Slip",
     subtitle: "Use at pharmacy for dispensing prescribed medicines.",
@@ -50,14 +52,19 @@ export async function GET(_request: Request, context: Context) {
           headers: ["Medicine", "Dose", "Frequency", "Duration", "Route", "Status"],
           widths: [122, 70, 84, 78, 70, 72],
           rows: prescriptions.length
-            ? prescriptions.map((item) => [
-                item.medication_name,
-                item.dosage,
-                item.frequency,
-                item.duration,
-                item.route,
-                formatStatusLabel(item.status),
-              ])
+            ? [
+                ...visiblePrescriptions.map((item) => [
+                  item.medication_name,
+                  item.dosage,
+                  item.frequency,
+                  item.duration,
+                  item.route,
+                  formatStatusLabel(item.status),
+                ]),
+                ...(hiddenPrescriptionCount
+                  ? [[`${hiddenPrescriptionCount} more medicine(s)`, "See EHR", "", "", "", ""]]
+                  : []),
+              ]
             : [["No medicines prescribed", "", "", "", "", ""]],
         },
       },
@@ -66,7 +73,12 @@ export async function GET(_request: Request, context: Context) {
       {
         title: "Instructions",
         lines: prescriptions.length
-          ? prescriptions.map((item) => `${item.medication_name}: ${item.instructions || "No special instructions recorded."}`)
+          ? [
+              ...visiblePrescriptions
+                .slice(0, 5)
+                .map((item) => `${item.medication_name}: ${item.instructions || "No special instructions recorded."}`),
+              ...(prescriptions.length > 5 ? [`${prescriptions.length - 5} more instruction line(s) kept in EHR.`] : []),
+            ]
           : ["No pharmacy instructions recorded."],
       },
     ],

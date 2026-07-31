@@ -18,7 +18,7 @@ export type PdfReceiptInput = {
 
 const PAGE_WIDTH = 595.28;
 const PAGE_HEIGHT = 841.89;
-const MARGIN = 48;
+const MARGIN = 34;
 const CONTENT_WIDTH = PAGE_WIDTH - MARGIN * 2;
 
 function safeText(value: string | number | null | undefined) {
@@ -66,6 +66,7 @@ function wrapText(value: string | number | null | undefined, maxWidth: number, s
 class PdfBuilder {
   private pages: string[][] = [[]];
   private y = PAGE_HEIGHT - MARGIN;
+  private contentTruncated = false;
 
   private get currentPage() {
     return this.pages[this.pages.length - 1];
@@ -77,10 +78,10 @@ class PdfBuilder {
 
   private ensureSpace(height: number) {
     if (this.y - height >= MARGIN) {
-      return;
+      return true;
     }
-    this.pages.push([]);
-    this.y = PAGE_HEIGHT - MARGIN;
+    this.contentTruncated = true;
+    return false;
   }
 
   private drawTextAt(value: string | number | null | undefined, x: number, y: number, size = 10, bold = false) {
@@ -89,16 +90,20 @@ class PdfBuilder {
   }
 
   private rule() {
-    this.ensureSpace(10);
+    if (!this.ensureSpace(8)) {
+      return;
+    }
     this.raw(`0.75 w ${MARGIN} ${this.y.toFixed(2)} m ${PAGE_WIDTH - MARGIN} ${this.y.toFixed(2)} l S`);
-    this.y -= 14;
+    this.y -= 10;
   }
 
   addText(value: string | number | null | undefined, options: { size?: number; bold?: boolean; gap?: number } = {}) {
     const size = options.size ?? 10;
-    const lineHeight = size + 5;
+    const lineHeight = size + 3;
     const lines = wrapText(value, CONTENT_WIDTH, size);
-    this.ensureSpace(lines.length * lineHeight + (options.gap ?? 0));
+    if (!this.ensureSpace(lines.length * lineHeight + (options.gap ?? 0))) {
+      return;
+    }
     for (const line of lines) {
       this.drawTextAt(line, MARGIN, this.y, size, options.bold);
       this.y -= lineHeight;
@@ -110,57 +115,63 @@ class PdfBuilder {
     if (!items.length) {
       return;
     }
-    this.ensureSpace(Math.ceil(items.length / 2) * 34 + 16);
+    if (!this.ensureSpace(Math.ceil(items.length / 2) * 26 + 8)) {
+      return;
+    }
     const colWidth = CONTENT_WIDTH / 2 - 12;
     for (let index = 0; index < items.length; index += 2) {
       const row = items.slice(index, index + 2);
       row.forEach(([label, value], column) => {
         const x = MARGIN + column * (colWidth + 24);
-        this.drawTextAt(label, x, this.y, 8, true);
-        this.drawTextAt(value || "None recorded", x, this.y - 14, 10, false);
+        this.drawTextAt(label, x, this.y, 7, true);
+        this.drawTextAt(value || "None recorded", x, this.y - 11, 8.5, false);
       });
-      this.y -= 34;
+      this.y -= 26;
     }
-    this.y -= 8;
+    this.y -= 4;
   }
 
   addSection(title: string, lines: Array<string | number | null | undefined>) {
-    this.addText(title, { size: 13, bold: true, gap: 2 });
-    lines.forEach((line) => this.addText(line || "None recorded.", { size: 10, gap: 1 }));
-    this.y -= 8;
+    this.addText(title, { size: 11, bold: true, gap: 1 });
+    lines.forEach((line) => this.addText(line || "None recorded.", { size: 8.5, gap: 0 }));
+    this.y -= 4;
   }
 
   addTable(title: string | undefined, table: PdfTable) {
     if (title) {
-      this.addText(title, { size: 13, bold: true, gap: 2 });
+      this.addText(title, { size: 11, bold: true, gap: 1 });
     }
 
     const widths = table.widths ?? table.headers.map(() => CONTENT_WIDTH / table.headers.length);
-    this.ensureSpace(32);
+    if (!this.ensureSpace(24)) {
+      return;
+    }
     let x = MARGIN;
     table.headers.forEach((header, index) => {
-      this.drawTextAt(header.toUpperCase(), x, this.y, 8, true);
+      this.drawTextAt(header.toUpperCase(), x, this.y, 7, true);
       x += widths[index] ?? 80;
     });
-    this.y -= 14;
+    this.y -= 10;
     this.rule();
 
     for (const row of table.rows) {
-      const wrappedCells = row.map((cell, index) => wrapText(cell, (widths[index] ?? 80) - 6, 9));
+      const wrappedCells = row.map((cell, index) => wrapText(cell, (widths[index] ?? 80) - 6, 8));
       const rowLines = Math.max(...wrappedCells.map((cell) => cell.length));
-      const rowHeight = rowLines * 13 + 8;
-      this.ensureSpace(rowHeight);
+      const rowHeight = rowLines * 10 + 5;
+      if (!this.ensureSpace(rowHeight)) {
+        break;
+      }
 
       for (let lineIndex = 0; lineIndex < rowLines; lineIndex += 1) {
         let cellX = MARGIN;
         wrappedCells.forEach((cell, cellIndex) => {
-          this.drawTextAt(cell[lineIndex] ?? "", cellX, this.y - lineIndex * 13, 9, false);
+          this.drawTextAt(cell[lineIndex] ?? "", cellX, this.y - lineIndex * 10, 8, false);
           cellX += widths[cellIndex] ?? 80;
         });
       }
       this.y -= rowHeight;
     }
-    this.y -= 8;
+    this.y -= 4;
   }
 
   addTotals(items: PdfMetaItem[]) {
@@ -169,30 +180,38 @@ class PdfBuilder {
     }
     this.rule();
     for (const [label, value] of items) {
-      this.ensureSpace(18);
-      this.drawTextAt(label, MARGIN, this.y, 11, true);
-      this.drawTextAt(value, PAGE_WIDTH - MARGIN - 170, this.y, 11, true);
-      this.y -= 18;
+      if (!this.ensureSpace(14)) {
+        return;
+      }
+      this.drawTextAt(label, MARGIN, this.y, 9, true);
+      this.drawTextAt(value, PAGE_WIDTH - MARGIN - 170, this.y, 9, true);
+      this.y -= 14;
     }
-    this.y -= 12;
+    this.y -= 6;
   }
 
   addSignatures(labels: string[]) {
     if (!labels.length) {
       return;
     }
-    this.ensureSpace(70);
+    if (!this.ensureSpace(46)) {
+      return;
+    }
     const colWidth = CONTENT_WIDTH / labels.length;
     labels.forEach((label, index) => {
       const x = MARGIN + index * colWidth;
       const lineEnd = x + colWidth - 18;
       this.raw(`0.75 w ${x.toFixed(2)} ${this.y.toFixed(2)} m ${lineEnd.toFixed(2)} ${this.y.toFixed(2)} l S`);
-      this.drawTextAt(label, x, this.y - 16, 9, false);
+      this.drawTextAt(label, x, this.y - 12, 8, false);
     });
-    this.y -= 56;
+    this.y -= 36;
   }
 
   build() {
+    if (this.contentTruncated && this.y - 18 >= MARGIN) {
+      this.drawTextAt("Additional details remain available in the EHR record.", MARGIN, this.y, 8, true);
+    }
+
     const objects: string[] = [];
     objects[1] = "<< /Type /Catalog /Pages 2 0 R >>";
     objects[3] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>";

@@ -32,6 +32,8 @@ export async function GET(_request: Request, context: Context) {
 
   const receipt = payload as InvoiceReceipt;
   const { invoice, payments } = receipt;
+  const visiblePayments = payments.slice(0, 5);
+  const hiddenPaymentsCount = Math.max(payments.length - visiblePayments.length, 0);
   const buffer = createReceiptPdf({
     title: "Hospital Bill",
     subtitle: "Invoice for hospital services, medicines, investigations, and care.",
@@ -58,12 +60,15 @@ export async function GET(_request: Request, context: Context) {
           headers: ["Payment", "Method", "Reference", "Date"],
           widths: [110, 90, 160, 136],
           rows: payments.length
-            ? payments.map((payment) => [
-                formatCurrency(payment.amount_paid),
-                formatStatusLabel(payment.payment_method),
-                payment.transaction_reference || "Cash payment",
-                formatDateTime(payment.payment_date),
-              ])
+            ? [
+                ...visiblePayments.map((payment) => [
+                  formatCurrency(payment.amount_paid),
+                  formatStatusLabel(payment.payment_method),
+                  payment.transaction_reference || "Cash payment",
+                  formatDateTime(payment.payment_date),
+                ]),
+                ...(hiddenPaymentsCount ? [[`${hiddenPaymentsCount} more payment(s)`, "See EHR", "", ""]] : []),
+              ]
             : [["No payments recorded", "", "", ""]],
         },
       },
