@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useDeferredValue, useEffect, useState } from "react";
 
+import { PatientJourneyGuide } from "@/components/workflow/patient-journey-guide";
 import { apiRequest } from "@/lib/client-api";
 import { formatDate } from "@/lib/format";
 import type { PaginatedResponse, PatientSummary } from "@/types";
-import { PatientJourneyGuide } from "@/components/workflow/patient-journey-guide";
 
 function EmptyState({ message }: { message: string }) {
   return <div className="medical-empty-state rounded-2xl px-4 py-5 text-sm">{message}</div>;
@@ -21,6 +21,21 @@ export function PatientSearch() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const deferredSearch = useDeferredValue(search);
+  const hasActiveFilters = Boolean(deferredSearch.trim() || gender || bloodGroup);
+  const emptyMessage = hasActiveFilters
+    ? "No patients matched the current search."
+    : "No patients are registered yet. Register the first patient to start the directory.";
+  const directoryTitle = hasActiveFilters ? "Search results" : "All registered patients";
+  const directoryBadge = data
+    ? `${data.count} ${hasActiveFilters ? "matching patient" : "registered patient"}${data.count === 1 ? "" : "s"}`
+    : "";
+
+  function clearFilters() {
+    setSearch("");
+    setGender("");
+    setBloodGroup("");
+    setPage(1);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -30,8 +45,8 @@ export function PatientSearch() {
       setError(null);
 
       const params = new URLSearchParams();
-      if (deferredSearch) {
-        params.set("search", deferredSearch);
+      if (deferredSearch.trim()) {
+        params.set("search", deferredSearch.trim());
       }
       if (gender) {
         params.set("gender", gender);
@@ -40,6 +55,7 @@ export function PatientSearch() {
         params.set("blood_group", bloodGroup);
       }
       params.set("page", String(page));
+      params.set("page_size", "25");
 
       try {
         const { data: payload } = await apiRequest<PaginatedResponse<PatientSummary>>(
@@ -75,7 +91,8 @@ export function PatientSearch() {
             <div className="medical-badge">Step 1 - Find the patient</div>
             <h3 className="mt-3 text-2xl font-semibold text-medical-primary">Find patient and open chart</h3>
             <p className="mt-2 max-w-2xl text-sm leading-7 text-medical-secondary">
-              When a patient arrives, search here first. If they are new, register them. If they already exist, open the chart and continue care.
+              When you click Find Patient, the full registered patient list appears first. Type a name, health ID, ID
+              number, or phone number only when you need to narrow it down.
             </p>
           </div>
 
@@ -124,6 +141,19 @@ export function PatientSearch() {
             ))}
           </select>
         </div>
+
+        <div className="mt-4 flex flex-col gap-3 text-sm text-medical-secondary sm:flex-row sm:items-center sm:justify-between">
+          <span>
+            {hasActiveFilters
+              ? "Showing filtered patients. Clear filters to return to the full registry."
+              : "Showing the full patient registry, newest registrations first."}
+          </span>
+          {hasActiveFilters && (
+            <button type="button" onClick={clearFilters} className="medical-button medical-button-secondary">
+              Show all registered patients
+            </button>
+          )}
+        </div>
       </section>
 
       {error && <div className="rounded-[2rem] bg-red-50 px-5 py-4 text-sm text-red-700">{error}</div>}
@@ -131,17 +161,17 @@ export function PatientSearch() {
       <section className="medical-card rounded-[2rem] p-6">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h3 className="text-xl font-semibold text-medical-primary">Patient directory</h3>
+            <h3 className="text-xl font-semibold text-medical-primary">{directoryTitle}</h3>
             <p className="mt-2 text-sm text-medical-secondary">
               Choose the correct patient, then open the chart to review alerts, visits, labs, medicines, and next steps.
             </p>
           </div>
-          {data && <div className="medical-badge">{data.count} total matches</div>}
+          {data && <div className="medical-badge">{directoryBadge}</div>}
         </div>
 
         <div className="mt-5 space-y-3 md:hidden">
           {loading ? (
-            <EmptyState message="Searching patients..." />
+            <EmptyState message="Loading registered patients..." />
           ) : data?.results.length ? (
             data.results.map((patient) => (
               <Link
@@ -152,7 +182,7 @@ export function PatientSearch() {
                 <div>
                   <div className="text-lg font-semibold text-medical-primary">{patient.full_name}</div>
                   <div className="mt-1 text-sm text-medical-secondary">
-                    {patient.health_id} • {patient.national_id}
+                    {patient.health_id} - {patient.national_id}
                   </div>
                 </div>
                 <div className="grid gap-2 text-sm text-medical-secondary">
@@ -163,7 +193,7 @@ export function PatientSearch() {
               </Link>
             ))
           ) : (
-            <EmptyState message="No patients matched the current search." />
+            <EmptyState message={emptyMessage} />
           )}
         </div>
 
@@ -183,7 +213,7 @@ export function PatientSearch() {
               {loading ? (
                 <tr>
                   <td colSpan={6}>
-                    <EmptyState message="Searching patients..." />
+                    <EmptyState message="Loading registered patients..." />
                   </td>
                 </tr>
               ) : data?.results.length ? (
@@ -210,7 +240,7 @@ export function PatientSearch() {
               ) : (
                 <tr>
                   <td colSpan={6}>
-                    <EmptyState message="No patients matched the current search." />
+                    <EmptyState message={emptyMessage} />
                   </td>
                 </tr>
               )}
