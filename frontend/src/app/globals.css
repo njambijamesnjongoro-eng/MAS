@@ -367,6 +367,10 @@ input.medical-input {
   box-shadow: var(--glow-primary);
 }
 
+.medical-theme-switcher > .medical-low-data-toggle {
+  grid-column: 1 / -1;
+}
+
 .medical-table-wrap {
   overflow: auto;
   border-radius: 1.5rem;
@@ -507,6 +511,47 @@ input.medical-input {
 [data-theme="dark-medical"] .shadow-lg,
 [data-theme="dark-medical"] .shadow-xl {
   box-shadow: 0 18px 45px rgba(2, 6, 23, 0.58) !important;
+}
+
+[data-bandwidth="low"] *,
+[data-bandwidth="low"] *::before,
+[data-bandwidth="low"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  scroll-behavior: auto !important;
+  transition-duration: 0.01ms !important;
+}
+
+[data-bandwidth="low"] .medical-card,
+[data-bandwidth="low"] .medical-sidebar,
+[data-bandwidth="low"] .medical-theme-switcher > button,
+[data-bandwidth="low"] .medical-table-wrap,
+[data-bandwidth="low"] .medical-analytics-card {
+  box-shadow: none !important;
+}
+
+[data-bandwidth="low"] .medical-card,
+[data-bandwidth="low"] .medical-hero,
+[data-bandwidth="low"] .medical-analytics-card {
+  background: var(--panel) !important;
+}
+
+[data-bandwidth="low"] .medical-sidebar {
+  background: var(--sidebar) !important;
+}
+
+[data-bandwidth="low"] .medical-glass {
+  backdrop-filter: none !important;
+  background: var(--panel) !important;
+}
+
+[data-bandwidth="low"] .medical-card-interactive:hover,
+[data-bandwidth="low"] .medical-theme-switcher > button:hover {
+  transform: none !important;
+}
+
+[data-bandwidth="low"] .medical-button:hover {
+  box-shadow: none !important;
 }
 
 @media (min-width: 640px) {

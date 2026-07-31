@@ -307,6 +307,59 @@ function DashboardScrollSections({ isOperationalDashboard }: { isOperationalDash
   );
 }
 
+const lowResourceGuides = [
+  {
+    title: "Slow internet or older phone",
+    helper: "Turn on Low data mode in the top theme switcher. It removes heavy glows, blur, and motion so pages feel lighter.",
+  },
+  {
+    title: "Power or network interruption",
+    helper: "Doctor visit notes are kept as a local draft until they are saved. Staff should still save before leaving the patient.",
+  },
+  {
+    title: "Cash, M-Pesa, card, or insurance",
+    helper: "Use bills and payments to issue the hospital bill, payment receipt, and medicine receipt as one-page PDFs.",
+  },
+  {
+    title: "Paper backup day",
+    helper: "Print the patient health ID, bill receipt, payment receipt, and prescription when the hospital needs a paper trail.",
+  },
+];
+
+function LowResourceReadinessPanel({ isOperationalDashboard }: { isOperationalDashboard: boolean }) {
+  return (
+    <section className="medical-card rounded-[2rem] p-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <div className="medical-badge">Low-resource ready</div>
+          <h3 className="mt-3 text-xl font-semibold text-medical-primary">Built for real hospital conditions</h3>
+          <p className="mt-2 max-w-4xl text-sm leading-7 text-medical-secondary">
+            This system now supports the practical realities many hospitals face: slow phones, expensive bundles,
+            shared computers, unstable electricity, paper backups, cash payments, and M-Pesa reconciliation.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <Link href="/patients" className="medical-button medical-button-primary">
+            Open patient list
+          </Link>
+          <Link href={isOperationalDashboard ? "/billing" : "/appointments"} className="medical-button medical-button-secondary">
+            {isOperationalDashboard ? "Open payments" : "Open appointments"}
+          </Link>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {lowResourceGuides.map((item) => (
+          <article key={item.title} className="medical-subtle-panel rounded-[1.4rem] p-4">
+            <h4 className="font-semibold text-medical-primary">{item.title}</h4>
+            <p className="mt-2 text-sm leading-6 text-medical-secondary">{item.helper}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export function DashboardOverview() {
   const [user, setUser] = useState<AuthUser | null>(() => getCachedAuthUser());
   const [clinical, setClinical] = useState<ClinicalDashboardSummary | null>(null);
@@ -780,6 +833,8 @@ export function DashboardOverview() {
       </section>
 
       <DashboardScrollSections isOperationalDashboard={isOperationalDashboard} />
+
+      <LowResourceReadinessPanel isOperationalDashboard={isOperationalDashboard} />
     </div>
   );
 }

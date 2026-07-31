@@ -44,6 +44,11 @@ type VisitFormState = {
   lab_requests: LabRequest[];
 };
 
+type VisitDraft = {
+  savedAt: string;
+  form: VisitFormState;
+};
+
 const emptyPrescription = (): Prescription => ({
   medication_name: "",
   dosage: "",
@@ -97,6 +102,8 @@ const consultationSteps = [
   { href: "#visit-labs", label: "5. Labs" },
   { href: "#finish-visit", label: "6. Finish" },
 ];
+
+const VISIT_DRAFT_PREFIX = "ehr_visit_draft";
 
 function toLocalDateTime(value?: string) {
   if (!value) {
@@ -156,12 +163,59 @@ function extractError(payload: unknown) {
   return "Unable to save visit.";
 }
 
+function getVisitDraftKey(patientId: string, visitId?: string) {
+  return `${VISIT_DRAFT_PREFIX}:${patientId}:${visitId ?? "new"}`;
+}
+
+function hasMeaningfulVisitDraft(form: VisitFormState) {
+  return Boolean(
+    form.chief_complaint.trim() ||
+      form.symptoms.trim() ||
+      form.diagnosis_summary.trim() ||
+      form.treatment_plan.trim() ||
+      form.diagnosis.primary_diagnosis.trim() ||
+      form.diagnosis.clinical_notes.trim() ||
+      form.prescriptions.some((item) => item.medication_name.trim()) ||
+      form.lab_requests.some((item) => item.test_name.trim()) ||
+      Object.values(form.vitals).some((value) => value.trim()),
+  );
+}
+
+function readVisitDraft(key: string) {
+  try {
+    const storedDraft = window.localStorage.getItem(key);
+    if (!storedDraft) {
+      return null;
+    }
+    const draft = JSON.parse(storedDraft) as VisitDraft;
+    if (!draft.form || !hasMeaningfulVisitDraft(draft.form)) {
+      window.localStorage.removeItem(key);
+      return null;
+    }
+    return draft;
+  } catch {
+    window.localStorage.removeItem(key);
+    return null;
+  }
+}
+
+function formatDraftTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "recently";
+  }
+  return date.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
+}
+
 export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
   const router = useRouter();
+  const draftKey = useMemo(() => getVisitDraftKey(patientId, visitId), [patientId, visitId]);
   const [patient, setPatient] = useState<PatientDetail | null>(null);
   const [visit, setVisit] = useState<VisitDetail | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [form, setForm] = useState<VisitFormState>(defaultFormState);
+  const [draftNotice, setDraftNotice] = useState<VisitDraft | null>(null);
+  const [draftAutosaveEnabled, setDraftAutosaveEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [closingVisit, setClosingVisit] = useState(false);
@@ -172,6 +226,8 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
   useEffect(() => {
     let cancelled = false;
     async function loadData() {
+      setDraftNotice(null);
+      setDraftAutosaveEnabled(false);
       try {
         const requests: Array<Promise<{ data: unknown }>> = [
           apiRequest<PatientDetail>(`/api/patients/${patientId}`),
@@ -195,6 +251,13 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
         } else {
           setForm(defaultFormState);
         }
+
+        const localDraft = readVisitDraft(draftKey);
+        if (localDraft) {
+          setDraftNotice(localDraft);
+        } else {
+          setDraftAutosaveEnabled(true);
+        }
       } catch (loadError) {
         if (!cancelled) {
           setError(loadError instanceof Error ? loadError.message : "Unable to load visit workspace.");
@@ -209,11 +272,29 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
     return () => {
       cancelled = true;
     };
-  }, [patientId, visitId]);
+  }, [draftKey, patientId, visitId]);
 
   const canEditEncounter = useMemo(() => {
     return user ? ["doctor", "hospital_admin", "super_admin"].includes(user.effective_role) : false;
   }, [user]);
+
+  useEffect(() => {
+    if (!draftAutosaveEnabled || loading || !patient || !canEditEncounter || form.status === "closed") {
+      return;
+    }
+
+    if (!hasMeaningfulVisitDraft(form)) {
+      window.localStorage.removeItem(draftKey);
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      window.localStorage.setItem(draftKey, JSON.stringify({ savedAt: new Date().toISOString(), form }));
+    }, 900);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [canEditEncounter, draftAutosaveEnabled, draftKey, form, loading, patient]);
+
   const canEditVitals = useMemo(() => {
     return user ? ["doctor", "nurse", "hospital_admin", "super_admin"].includes(user.effective_role) : false;
   }, [user]);
@@ -259,6 +340,23 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
         itemIndex === index ? { ...item, [field]: value } : item,
       ),
     }));
+  }
+
+  function restoreLocalDraft() {
+    if (!draftNotice) {
+      return;
+    }
+    setForm(draftNotice.form);
+    setDraftNotice(null);
+    setDraftAutosaveEnabled(true);
+    setToast({ message: "Local consultation draft restored.", tone: "success" });
+  }
+
+  function discardLocalDraft() {
+    window.localStorage.removeItem(draftKey);
+    setDraftNotice(null);
+    setDraftAutosaveEnabled(true);
+    setToast({ message: "Local consultation draft discarded.", tone: "success" });
   }
 
   function buildPayload() {
@@ -327,6 +425,9 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
         throw new Error(extractError(payload));
       }
       const savedVisit = payload as VisitDetail;
+      window.localStorage.removeItem(draftKey);
+      setDraftNotice(null);
+      setDraftAutosaveEnabled(true);
       setVisit(savedVisit);
       setForm(buildFormFromVisit(savedVisit));
       setToast({ message: visitId ? "Visit updated successfully." : "Visit created successfully.", tone: "success" });
@@ -352,6 +453,9 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
         throw new Error(extractError(payload));
       }
       const closedVisit = payload as VisitDetail;
+      window.localStorage.removeItem(draftKey);
+      setDraftNotice(null);
+      setDraftAutosaveEnabled(true);
       setVisit(closedVisit);
       setForm(buildFormFromVisit(closedVisit));
       setToast({ message: "Visit closed successfully.", tone: "success" });
@@ -418,6 +522,30 @@ export function VisitWorkspace({ patientId, visitId }: VisitWorkspaceProps) {
   return (
     <div className="space-y-6">
       {toast && <ToastNotice message={toast.message} tone={toast.tone} onClose={() => setToast(null)} />}
+
+      {draftNotice && canEditEncounter && (
+        <section className="medical-card rounded-[2rem] border border-amber-300/70 p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="medical-badge">Unsaved local draft</div>
+              <h3 className="mt-3 text-lg font-semibold text-medical-primary">Recover interrupted consultation notes</h3>
+              <p className="mt-2 max-w-3xl text-sm leading-7 text-medical-secondary">
+                A local draft from {formatDraftTime(draftNotice.savedAt)} was found on this device. Restore it if
+                the internet or power failed while the doctor was typing. Discard it on shared computers after saving
+                the real visit.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <button type="button" onClick={restoreLocalDraft} className="medical-button medical-button-primary">
+                Restore draft
+              </button>
+              <button type="button" onClick={discardLocalDraft} className="medical-button medical-button-ghost">
+                Discard draft
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="medical-card rounded-[2rem] p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">

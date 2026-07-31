@@ -108,6 +108,16 @@ type AppShellProps = {
   children: React.ReactNode;
 };
 
+function clearLocalVisitDrafts() {
+  try {
+    Object.keys(window.localStorage)
+      .filter((key) => key.startsWith("ehr_visit_draft:"))
+      .forEach((key) => window.localStorage.removeItem(key));
+  } catch {
+    // Local storage can be blocked by the browser, but logout should still continue.
+  }
+}
+
 export function AppShell({ title, description, children }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -150,6 +160,7 @@ export function AppShell({ title, description, children }: AppShellProps) {
     startLogoutTransition(async () => {
       await fetch("/api/auth/logout", { method: "POST" });
       clearCachedAuthUser();
+      clearLocalVisitDrafts();
       router.replace("/login");
     });
   }
